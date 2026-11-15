@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "fixture_id": 10,
+  "source_fixture": "pilot/fixtures/case-10-observation.v1.json",
+  "review_status": "synthetic_arithmetic_only_domain_unreviewed",
+  "expected": {
+    "raw_return": "-0.022",
+    "cash_adjusted_return": "0.002",
+    "decision": "pass"
+  },
+  "negative_case_names": [
+    "stale_data",
+    "missing_data",
+    "wrong_instrument",
+    "entitlement_failure",
+    "declined_approval",
+    "lost_response_before_commit",
+    "lost_response_after_commit",
+    "duplicate_delivery",
+    "destination_mismatch",
+    "later_mark_revision"
+  ]
+}
