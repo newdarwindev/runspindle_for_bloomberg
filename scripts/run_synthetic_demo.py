@@ -8,6 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+from pilot.adapters import ObservationRequest, SyntheticObservationAdapter
 from pilot.runtime import Runtime
 
 OUTPUT = ROOT / "pilot/demo-runs.v1.json"
@@ -18,29 +19,33 @@ def build_demo():
     ids = iter(("synthetic-success", "synthetic-timeout"))
     identity = dict(actor_id="synthetic-operator", account_id="synthetic:paper-desk",
                     session_id="synthetic-session")
-    observation = dict(instrument_id="SYNTH-CASE-10", prior_date="2026-11-13",
-                       current_date="2026-11-14", source_timestamp="2026-11-15T11:00:00Z",
-                       prior_close="50.00", current_close="48.90", cash_dividend="1.20",
-                       entitled=True, fresh=True, no_other_corporate_action=True)
+    fixture = json.loads((ROOT / "pilot/fixtures/case-10-observation.v1.json").read_text())
+    source = SyntheticObservationAdapter(fixture, clock=lambda: now)
+    request = ObservationRequest(account_id=identity["account_id"],
+                                 session_id=identity["session_id"],
+                                 instrument_id="SYNTH-CASE-10")
     with tempfile.TemporaryDirectory() as temporary:
         runtime = Runtime(Path(temporary) / "demo.sqlite", clock=lambda: now,
                           id_factory=lambda: next(ids))
         traces = []
         for mode in ("success", "timeout_after_commit"):
-            run_id = runtime.create(**identity, instrument_id="SYNTH-CASE-10",
-                                    observation=observation,
-                                    lease_until=(now + timedelta(hours=1)).isoformat(),
-                                    deadline=(now + timedelta(minutes=30)).isoformat())
+            run_id, source_result = runtime.create_from_adapter(
+                source, request, actor_id=identity["actor_id"],
+                lease_until=(now + timedelta(hours=1)).isoformat(),
+                deadline=(now + timedelta(minutes=30)).isoformat())
+            assert run_id and source_result.status == "ok"
             runtime.preview(run_id, **identity)
             runtime.approve(run_id, **identity, accepted=True)
             before_readback = runtime.submit(run_id, **identity, mode=mode)
             after_readback = runtime.readback(run_id, **identity)
             traces.append({"mode": mode, "run_id": run_id,
+                           "source_receipt": source_result.receipt,
                            "before_readback_state": before_readback["state"],
                            "before_readback_effect": before_readback["effect_status"],
                            "after_readback_state": after_readback["state"],
                            "after_readback_effect": after_readback["effect_status"],
                            "operation_id": after_readback["operation_id"],
+                           "destination_receipts": after_readback["destination_receipts"],
                            "chain_valid": runtime.verify_chain(run_id),
                            "events": [json.loads(event["payload"]) for event in runtime.events(run_id)]})
         runtime.close()
