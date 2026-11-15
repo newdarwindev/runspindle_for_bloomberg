@@ -10,6 +10,7 @@ A static marketing and source-library site for the **Runspindle for the Bloomber
 - [Asset guide](ASSETS.md): annotations and relationships for every original asset.
 - [Gallery index](assets/Runspindle_Gallery_Index.html): 37-page map with citations for the eight additional business cases.
 - [Synthetic replay corpus](evaluation/README.md): source-linked fixtures and evidence-gated run classification for issue #7; finance rules and outcomes remain unverified.
+- [Full-cost model](economics/README.md): an input template and calculator for comparing four alternatives without inventing costs or savings.
 
 ## Build locally
 
