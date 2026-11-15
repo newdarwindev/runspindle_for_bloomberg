@@ -31,8 +31,10 @@ needs independent review to be labeled correct. Evidence references and review
 labels are supplied by the evaluator, so this script checks their presence; it
 does not authenticate them or independently verify finance calculations.
 
-Do not publish a completion rate from these fixtures alone. The remaining
-issue #7 work includes reviewed calculation rules, negative cases, a replay
-executor, independently checked evidence, frozen matched-baseline protocol,
-holdout families, and a report with human time, latency, full cost, and
-uncertainty. Live acceptance depends on separate access and pilot gates.
+The [case 10 replay protocol](protocol.v1.md) now adds one executable
+synthetic fixture, ten negative cases, a separate read-only verifier, and a
+deterministic report. The other 39 cases remain unreviewed source prose.
+Do not publish a completion rate from these fixtures alone. Issue #7 still
+needs domain-reviewed calculations across the selected corpus, real matched
+baselines, holdout families, human time, latency, full cost, and uncertainty.
+Live acceptance depends on separate access and pilot gates.
