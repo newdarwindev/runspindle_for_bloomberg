@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "period": null,
+  "currency": null,
+  "task_boundary": null,
+  "permission_rule": null,
+  "acceptance_criteria": null,
+  "cost_owner": null,
+  "options": {
+    "native_terminal": {
+      "attempts": null,
+      "accepted_authorized_completions": null,
+      "costs": {
+        "setup_amortized": null,
+        "licensing": null,
+        "maintenance": null,
+        "allocated_fixed": null,
+        "model": null,
+        "tools": null,
+        "human_operation": null,
+        "verification": null,
+        "recovery": null,
+        "support": null
+      }
+    },
+    "expert_assisted": {
+      "attempts": null,
+      "accepted_authorized_completions": null,
+      "costs": {
+        "setup_amortized": null,
+        "licensing": null,
+        "maintenance": null,
+        "allocated_fixed": null,
+        "model": null,
+        "tools": null,
+        "human_operation": null,
+        "verification": null,
+        "recovery": null,
+        "support": null
+      }
+    },
+    "deterministic_integration": {
+      "attempts": null,
+      "accepted_authorized_completions": null,
+      "costs": {
+        "setup_amortized": null,
+        "licensing": null,
+        "maintenance": null,
+        "allocated_fixed": null,
+        "model": null,
+        "tools": null,
+        "human_operation": null,
+        "verification": null,
+        "recovery": null,
+        "support": null
+      }
+    },
+    "runspindle": {
+      "attempts": null,
+      "accepted_authorized_completions": null,
+      "costs": {
+        "setup_amortized": null,
+        "licensing": null,
+        "maintenance": null,
+        "allocated_fixed": null,
+        "model": null,
+        "tools": null,
+        "human_operation": null,
+        "verification": null,
+        "recovery": null,
+        "support": null
+      }
+    }
+  }
+}
