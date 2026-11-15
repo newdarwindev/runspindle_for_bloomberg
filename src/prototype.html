@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Case 10 · Synthetic Console prototype</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, sans-serif; color: #173638; background: #f4f7f3; }
+    * { box-sizing: border-box; }
+    body { max-width: 1050px; margin: auto; padding: 24px; }
+    a { color: #116c65; }
+    header, .panel { background: white; border: 1px solid #d7e4dc; border-radius: 14px; padding: 22px; margin-bottom: 18px; }
+    .eyebrow { color: #526c68; text-transform: uppercase; letter-spacing: .09em; font-size: .8rem; font-weight: 700; }
+    h1 { margin: .25em 0; }
+    .notice { background: #fff3d5; border-left: 4px solid #ba7b13; padding: 12px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    label { display: block; font-weight: 600; }
+    label input:not([type=checkbox]) { display: block; width: 100%; margin-top: 5px; padding: 10px; border: 1px solid #9bb4aa; border-radius: 6px; font: inherit; }
+    .checks label { margin: 10px 0; font-weight: 400; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    button { font: inherit; border: 1px solid #23756e; background: #176c64; color: white; border-radius: 7px; padding: 9px 13px; cursor: pointer; }
+    button:disabled { opacity: .38; cursor: not-allowed; }
+    button.secondary { background: white; color: #176c64; }
+    #phase { display: inline-block; background: #dceee9; padding: 5px 9px; border-radius: 5px; font-weight: 700; }
+    #error { color: #a02222; min-height: 1.5em; }
+    li { margin: 5px 0; }
+    @media (max-width: 650px) { .grid { grid-template-columns: 1fr; } body { padding: 12px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <p class="eyebrow">Runspindle / workflow contract v0.1</p>
+    <h1>Dividend-driven false breakdown</h1>
+    <p>Clickable Console study for synthetic catalog case 10. <a href="index.html">Return to the catalog</a>.</p>
+    <p class="notice">No Bloomberg connection, account authorization, trading, saved run record, or independent acceptance. Every action stays in this browser session.</p>
+  </header>
+  <main>
+    <section class="panel" aria-labelledby="setup-title">
+      <h2 id="setup-title">1. Set up the observation</h2>
+      <form id="setup">
+        <div class="grid">
+          <label>Exact security identifier<input name="instrument" value="SYNTH-CASE-10" required></label>
+          <label>Observation timestamp<input name="observedAt" type="datetime-local" value="2026-11-15T12:00" required></label>
+          <label>Prior close date<input name="priorDate" type="date" value="2026-11-13" required></label>
+          <label>Current close date<input name="currentDate" type="date" value="2026-11-14" required></label>
+          <label>Prior close<input name="priorClose" type="number" min="0.01" step="0.01" value="50.00" required></label>
+          <label>Current close<input name="currentClose" type="number" min="0" step="0.01" value="48.90" required></label>
+          <label>Cash dividend per share<input name="dividend" type="number" min="0" step="0.01" value="1.20" required></label>
+        </div>
+        <div class="checks">
+          <label><input type="checkbox" name="entitlementConfirmed"> I checked that the source and exact security are entitled for this use.</label>
+          <label><input type="checkbox" name="freshnessConfirmed"> I checked the observation timestamp and comparable closing marks.</label>
+          <label><input type="checkbox" name="noOtherActionConfirmed"> I checked that no other corporate action changes this comparison.</label>
+        </div>
+      </form>
+    </section>
+    <section class="panel" aria-labelledby="run-title">
+      <h2 id="run-title">2. Decide, record, and reconcile</h2>
+      <p>State: <span id="phase" role="status" aria-live="polite"></span></p>
+      <p id="summary" aria-live="polite"></p>
+      <p id="error" role="alert"></p>
+      <div class="actions">
+        <button data-action="preview">Preview rule</button>
+        <button data-action="approve">Approve paper Pass</button>
+        <button data-action="record">Simulate record</button>
+        <button data-action="simulate_unknown" class="secondary">Simulate unknown result</button>
+        <button data-action="reconcile_found" class="secondary">Readback: found</button>
+        <button data-action="reconcile_absent" class="secondary">Readback: absent</button>
+        <button data-action="review">Send for independent review</button>
+        <button data-action="takeover" class="secondary">Take over</button>
+        <button data-action="handback" class="secondary">Hand back</button>
+        <button data-action="pause" class="secondary">Pause</button>
+        <button data-action="cancel" class="secondary">Cancel / withdraw</button>
+        <button data-action="reset" class="secondary">Reset prototype</button>
+      </div>
+    </section>
+    <section class="panel" aria-labelledby="history-title">
+      <h2 id="history-title">3. In-memory event history</h2>
+      <ol id="history"></ol>
+      <p>This display is a usability sketch. It is not an audit log or evidence receipt.</p>
+    </section>
+  </main>
+  <script src="prototype.js" defer></script>
+</body>
+</html>
