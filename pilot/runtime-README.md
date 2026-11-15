@@ -1,10 +1,12 @@
-# Synthetic run coordinator (v0.1.0)
+# Synthetic run coordinator (v0.2.0)
 
 `pilot/runtime.py` is a local SQLite composition for the [case 10 draft](case-10-contract-v0.1.md).
 It is a test runtime, not a Bloomberg integration or an authorized pilot.
 Only account IDs beginning `synthetic:` can create runs. The model version is
 explicitly `none`; no model is invoked. `paper_decision` applies the synthetic
 arithmetic and pauses when required source conditions are not confirmed.
+The [adapter contracts](adapters-README.md) now supply source receipts and
+paper destination stage receipts for adapter-backed runs.
 
 Run `python3 scripts/run_synthetic_demo.py --check` to verify the committed
 [demo traces](demo-runs.v1.json), or omit `--check` to regenerate them. Run
@@ -33,6 +35,8 @@ unknown or confirmed effect for reconciliation. Takeover clears approval;
 handback requires a new preview and approval.
 Revising the synthetic observation before submission creates a new revision
 and invalidates the previous draft and approval.
+An adapter-backed observation requires a new sourced run instead of an
+in-place revision, so its source receipt remains bound to the exact values.
 
 Status and readback remain available after a lease or deadline expires for
 the same bound owner/account/session. State-changing work requires an active

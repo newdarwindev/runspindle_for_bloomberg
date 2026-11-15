@@ -1,0 +1,15 @@
+{
+  "fixture_id": "synthetic-case-10-v1",
+  "route": "synthetic:case-10-dividend",
+  "account_id": "synthetic:paper-desk",
+  "session_id": "synthetic-session",
+  "instrument_id": "SYNTH-CASE-10",
+  "observed_at": "2026-11-15T11:00:00Z",
+  "prior_date": "2026-11-13",
+  "current_date": "2026-11-14",
+  "prior_close": "50.00",
+  "current_close": "48.90",
+  "cash_dividend": "1.20",
+  "no_other_corporate_action": true,
+  "entitled": true
+}

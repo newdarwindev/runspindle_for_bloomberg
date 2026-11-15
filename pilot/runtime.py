@@ -8,10 +8,13 @@ from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
+from pilot.adapters import (DESTINATION_ROUTE, SOURCE_ROUTE, ObservationRequest,
+                            SyntheticObservationAdapter, SyntheticPaperDestination)
+
 SCHEMA_VERSION = 1
-RUNTIME_VERSION = "0.1.0"
+RUNTIME_VERSION = "0.2.0"
 MODEL_VERSION = "none"
-DESTINATION = "synthetic-paper-journal"
+DESTINATION = DESTINATION_ROUTE
 
 
 def canonical(value):
@@ -69,6 +72,7 @@ class Runtime:
         self.db.execute("PRAGMA foreign_keys = ON")
         self.db.execute("PRAGMA journal_mode = WAL")
         self._schema()
+        self.destination = SyntheticPaperDestination(self.db, clock=clock)
 
     def close(self):
         self.db.close()
@@ -125,8 +129,11 @@ class Runtime:
             previous = event["event_hash"]
             last = json.loads(event["payload"])
         run = self.status(run_id)
-        return last is not None and all(last[key] == run[key] for key in
-                                        ("revision", "state", "effect_status", "operation_id", "artifact_hash", "draft_hash"))
+        return last is not None and all(last.get(key) == run.get(key) for key in
+                                        ("revision", "state", "effect_status", "operation_id", "artifact_hash", "draft_hash")) \
+            and last.get("source_receipt_hash") == (digest(canonical(run.get("source_receipt"))) if run.get("source_receipt") else None) \
+            and (last.get("destination_receipts_hash") == digest(canonical(run.get("destination_receipts", [])))
+                 if "destination_receipts_hash" in last else not run.get("destination_receipts"))
 
     def _write(self, run, action, actor):
         run["revision"] += 1
@@ -139,7 +146,9 @@ class Runtime:
                              "effect_status": run["effect_status"],
                              "operation_id": run["operation_id"],
                              "artifact_hash": run["artifact_hash"],
-                             "draft_hash": run["draft_hash"]})
+                             "draft_hash": run["draft_hash"],
+                             "source_receipt_hash": digest(canonical(run["source_receipt"])) if run.get("source_receipt") else None,
+                             "destination_receipts_hash": digest(canonical(run.get("destination_receipts", [])))})
         self.db.execute("INSERT INTO events(run_id,payload,prev_hash,event_hash) VALUES (?,?,?,?)",
                         (run["id"], payload, prev_hash, digest(prev_hash + payload)))
 
@@ -156,14 +165,24 @@ class Runtime:
         if self.clock() >= parse_time(run["deadline"]):
             raise PermissionError("Run deadline expired")
 
+    def _source_current(self, run):
+        receipt = run.get("source_receipt")
+        if receipt:
+            age = self.clock() - parse_time(receipt["observed_at"])
+            if age.total_seconds() < 0 or age.total_seconds() > receipt["max_age_seconds"]:
+                raise PermissionError("Source observation stale")
+
     def create(self, *, actor_id, account_id, session_id, instrument_id,
-               observation, lease_until, deadline, max_submissions=1):
+               observation, lease_until, deadline, max_submissions=1, source_receipt=None):
         if not all((actor_id, account_id, session_id, instrument_id)):
             raise ValueError("Actor, account, session, and instrument required")
         if not account_id.startswith("synthetic:"):
             raise PermissionError("Only synthetic accounts are permitted")
         if observation.get("instrument_id") != instrument_id:
             raise ValueError("Observation instrument differs from selected target")
+        if source_receipt and (source_receipt.get("status") != "ok" or
+                               source_receipt.get("requested_instrument") != instrument_id):
+            raise ValueError("Source receipt does not match accepted observation")
         if parse_time(lease_until) <= self.clock() or parse_time(deadline) <= self.clock():
             raise ValueError("Lease and deadline must be in the future")
         if max_submissions != 1:
@@ -172,6 +191,7 @@ class Runtime:
                "owner_id": actor_id, "account_id": account_id, "session_id": session_id,
                "instrument_id": instrument_id, "observation": observation,
                "artifact_hash": digest(canonical(observation)), "draft": None, "draft_hash": None,
+               "source_receipt": source_receipt, "destination_receipts": [],
                "approval_actor": None, "operation_id": None, "effect_status": "none",
                "allowed_actions": ["paper_record"], "max_submissions": max_submissions,
                "submissions": 0, "lease_until": lease_until, "deadline": deadline,
@@ -182,13 +202,31 @@ class Runtime:
             self._write(run, "create", actor_id)
         return run["id"]
 
+    def create_from_adapter(self, adapter, request: ObservationRequest, *, actor_id,
+                            lease_until, deadline):
+        """Observe first; a blocked observation never creates an executable run."""
+        if not isinstance(adapter, SyntheticObservationAdapter) or request.route != SOURCE_ROUTE:
+            raise PermissionError("No live observation route is approved")
+        result = adapter.observe(request)
+        if result.status != "ok":
+            return None, result
+        run_id = self.create(actor_id=actor_id, account_id=request.account_id,
+                             session_id=request.session_id, instrument_id=request.instrument_id,
+                             observation=result.observation, source_receipt=result.receipt,
+                             lease_until=lease_until, deadline=deadline)
+        return run_id, result
+
     def preview(self, run_id, *, actor_id, account_id, session_id):
         with self._transaction():
             run = self.status(run_id); self._bound(run, actor_id, account_id, session_id)
             if run["state"] != "setup": raise ValueError("Preview requires setup")
+            self._source_current(run)
             draft = paper_decision(run["observation"])
             run["draft"] = draft; run["draft_hash"] = digest(canonical(draft))
             run["state"] = "preview" if draft["decision"] == "pass" else "paused"
+            if run["state"] == "preview":
+                run.setdefault("destination_receipts", []).append(
+                    self.destination.draft(run["instrument_id"], draft))
             self._write(run, "preview", actor_id)
         return self.status(run_id)
 
@@ -197,6 +235,8 @@ class Runtime:
             run = self.status(run_id); self._bound(run, actor_id, account_id, session_id)
             if run["state"] not in ("setup", "preview", "paused") or run["submissions"]:
                 raise ValueError("Revision unavailable after submission or takeover")
+            if run.get("source_receipt"):
+                raise ValueError("Adapter-backed observation requires a new sourced run")
             if observation.get("instrument_id") != run["instrument_id"]:
                 raise ValueError("Revised observation differs from selected target")
             run["observation"] = observation
@@ -211,11 +251,14 @@ class Runtime:
         with self._transaction():
             run = self.status(run_id); self._bound(run, actor_id, account_id, session_id)
             if run["state"] != "preview": raise ValueError("Approval requires preview")
+            self._source_current(run)
             run["state"] = "approved" if accepted else "paused"
             run["approval_actor"] = actor_id if accepted else None
             if accepted:
                 run["operation_id"] = digest(canonical([run_id, run["revision"] + 1,
                                                         DESTINATION, run["draft_hash"]]))
+                run.setdefault("destination_receipts", []).append(
+                    self.destination.approve(run["operation_id"], run["draft_hash"], actor_id))
             self._write(run, "approve" if accepted else "decline", actor_id)
         return self.status(run_id)
 
@@ -226,6 +269,7 @@ class Runtime:
             run = self.status(run_id); self._bound(run, actor_id, account_id, session_id)
             if run["state"] != "approved" or run["submissions"] >= run["max_submissions"]:
                 raise ValueError("Submission requires unused approval")
+            self._source_current(run)
             run["state"] = "submitting"; run["effect_status"] = "pending"
             run["submissions"] += 1
             self._write(run, "begin_submission", actor_id)
@@ -238,9 +282,9 @@ class Runtime:
             if run["state"] != "submitting":
                 raise ValueError("Submission fenced by takeover, cancellation, or recovery")
             if mode != "timeout_before_commit":
-                self.db.execute("INSERT INTO journal VALUES (?,?,?,?,?)",
-                                (run["operation_id"], account_id, run["instrument_id"],
-                                 run["draft_hash"], self.clock().isoformat()))
+                receipt = self.destination.execute(run)
+                if mode == "success":
+                    run.setdefault("destination_receipts", []).append(receipt)
             run["state"] = "pending_readback" if mode == "success" else "uncertain"
             run["effect_status"] = "unverified" if mode == "success" else "unknown"
             self._write(run, "adapter_response" if mode == "success" else "adapter_timeout", actor_id)
@@ -262,13 +306,13 @@ class Runtime:
                 raise ValueError("No effect requires readback")
             if run["state"] == "cancelled" and run["submissions"] == 0:
                 raise ValueError("Cancelled before submission; no effect to read back")
-            row = self.db.execute("SELECT * FROM journal WHERE operation_id=?", (run["operation_id"],)).fetchone()
-            if row is None:
+            receipt = self.destination.readback(run)
+            run.setdefault("destination_receipts", []).append(receipt)
+            if receipt["status"] == "absent_inconclusive":
                 run["state"] = "uncertain" if run["state"] != "cancelled" else "cancelled"
                 run["effect_status"] = "unknown"
                 action = "readback_absent_inconclusive"
-            elif (row["account_id"], row["instrument_id"], row["draft_hash"]) != (
-                    run["account_id"], run["instrument_id"], run["draft_hash"]):
+            elif receipt["status"] == "mismatch":
                 run["state"] = "paused"; run["effect_status"] = "mismatch"
                 action = "readback_mismatch"
             else:
