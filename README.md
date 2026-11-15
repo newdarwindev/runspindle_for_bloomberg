@@ -12,6 +12,7 @@ A static marketing and source-library site for the **Runspindle for the Bloomber
 - [Synthetic replay corpus](evaluation/README.md): source-linked fixtures and evidence-gated run classification for issue #7; finance rules and outcomes remain unverified.
 - [Full-cost model](economics/README.md): an input template and calculator for comparing four alternatives without inventing costs or savings.
 - [Case 10 draft contract](pilot/case-10-contract-v0.1.md) and [Console prototype](src/prototype.html): a synthetic paper-flow study for issue #4, without live access or accepted outcomes.
+- [Synthetic run coordinator](pilot/runtime-README.md): a local durable state machine and demo traces for issue #5, with no live adapter or accepted outcome.
 
 ## Build locally
 

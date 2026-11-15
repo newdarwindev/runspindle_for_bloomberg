@@ -1,0 +1,132 @@
+import json
+import sqlite3
+import tempfile
+import unittest
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+from pilot.runtime import Runtime
+
+
+class RuntimeTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.path = Path(self.temp.name) / "runs.sqlite"
+        self.now = [datetime(2026, 11, 15, 12, tzinfo=timezone.utc)]
+        self.runtime = Runtime(self.path, clock=lambda: self.now[0])
+        self.identity = dict(actor_id="operator-1", account_id="synthetic:desk-1", session_id="session-1")
+        self.observation = dict(instrument_id="SYNTH-CASE-10", prior_date="2026-11-13",
+                                current_date="2026-11-14", source_timestamp="2026-11-15T11:00:00Z",
+                                prior_close="50.00", current_close="48.90", cash_dividend="1.20",
+                                entitled=True, fresh=True, no_other_corporate_action=True)
+
+    def tearDown(self):
+        self.runtime.close()
+        self.temp.cleanup()
+
+    def create(self):
+        return self.runtime.create(**self.identity, instrument_id="SYNTH-CASE-10",
+                                   observation=self.observation,
+                                   lease_until=(self.now[0] + timedelta(hours=1)).isoformat(),
+                                   deadline=(self.now[0] + timedelta(minutes=30)).isoformat())
+
+    def approved(self):
+        run_id = self.create()
+        self.runtime.preview(run_id, **self.identity)
+        self.runtime.approve(run_id, **self.identity, accepted=True)
+        return run_id
+
+    def test_success_requires_readback_and_chain_is_append_only(self):
+        run_id = self.approved()
+        self.assertEqual(self.runtime.status(run_id)["draft"]["decision"], "pass")
+        self.assertEqual(self.runtime.submit(run_id, **self.identity)["state"], "pending_readback")
+        self.assertEqual(self.runtime.readback(run_id, **self.identity)["state"], "recorded")
+        self.assertEqual(self.runtime.status(run_id)["effect_status"], "confirmed")
+        self.assertTrue(self.runtime.verify_chain(run_id))
+        with self.assertRaisesRegex(sqlite3.DatabaseError, "append only"):
+            self.runtime.db.execute("DELETE FROM events WHERE run_id=?", (run_id,))
+
+    def test_account_session_and_lease_fence(self):
+        run_id = self.create()
+        with self.assertRaises(PermissionError):
+            self.runtime.preview(run_id, **{**self.identity, "account_id": "synthetic:other"})
+        with self.assertRaises(PermissionError):
+            self.runtime.preview(run_id, **{**self.identity, "session_id": "stale-session"})
+        with self.assertRaises(PermissionError):
+            self.runtime.preview(run_id, **{**self.identity, "actor_id": "other-operator"})
+        self.now[0] += timedelta(hours=2)
+        with self.assertRaisesRegex(PermissionError, "lease expired"):
+            self.runtime.preview(run_id, **self.identity)
+
+    def test_timeout_duplicate_and_readback(self):
+        run_id = self.approved()
+        result = self.runtime.submit(run_id, **self.identity, mode="timeout_after_commit")
+        self.assertEqual(result["state"], "uncertain")
+        self.assertEqual(result["effect_status"], "unknown")
+        with self.assertRaises(ValueError):
+            self.runtime.submit(run_id, **self.identity)
+        self.assertEqual(self.runtime.readback(run_id, **self.identity)["state"], "recorded")
+        self.assertEqual(self.runtime.db.execute("SELECT count(*) FROM journal").fetchone()[0], 1)
+
+    def test_missing_readback_and_cancel_preserve_unknown_effect(self):
+        run_id = self.approved()
+        self.runtime.submit(run_id, **self.identity, mode="timeout_before_commit")
+        self.assertEqual(self.runtime.readback(run_id, **self.identity)["state"], "uncertain")
+        self.runtime.control(run_id, "cancel", **self.identity)
+        self.assertEqual(self.runtime.readback(run_id, **self.identity)["effect_status"], "unknown")
+        with self.assertRaises(ValueError):
+            self.runtime.submit(run_id, **self.identity)
+
+    def test_readback_mismatch_pauses(self):
+        run_id = self.approved()
+        self.runtime.submit(run_id, **self.identity)
+        self.runtime.db.execute("UPDATE journal SET instrument_id='WRONG' WHERE operation_id=?",
+                                (self.runtime.status(run_id)["operation_id"],))
+        result = self.runtime.readback(run_id, **self.identity)
+        self.assertEqual((result["state"], result["effect_status"]), ("paused", "mismatch"))
+
+    def test_decline_cancel_and_takeover(self):
+        run_id = self.create()
+        self.runtime.preview(run_id, **self.identity)
+        self.assertEqual(self.runtime.approve(run_id, **self.identity, accepted=False)["state"], "paused")
+        with self.assertRaises(ValueError):
+            self.runtime.submit(run_id, **self.identity)
+        other = self.approved()
+        self.runtime.control(other, "takeover", **self.identity)
+        self.assertEqual(self.runtime.control(other, "handback", **self.identity)["state"], "setup")
+        with self.assertRaises(ValueError):
+            self.runtime.submit(other, **self.identity)
+        self.runtime.control(other, "cancel", **self.identity)
+        with self.assertRaises(ValueError):
+            self.runtime.preview(other, **self.identity)
+        with self.assertRaises(ValueError):
+            self.runtime.readback(other, **self.identity)
+
+    def test_revision_invalidates_draft_and_is_fenced_after_submission(self):
+        run_id = self.create()
+        first = self.runtime.preview(run_id, **self.identity)
+        changed = {**self.observation, "current_close": "48.95"}
+        revised = self.runtime.revise(run_id, changed, **self.identity)
+        self.assertEqual(revised["state"], "setup")
+        self.assertIsNone(revised["draft_hash"])
+        self.assertNotEqual(revised["artifact_hash"], first["artifact_hash"])
+        self.runtime.preview(run_id, **self.identity)
+        self.runtime.approve(run_id, **self.identity, accepted=True)
+        self.runtime.submit(run_id, **self.identity)
+        with self.assertRaises(ValueError):
+            self.runtime.revise(run_id, changed, **self.identity)
+
+    def test_restart_recovers_interrupted_submission_without_retry(self):
+        run_id = self.approved()
+        self.assertEqual(self.runtime.submit(run_id, **self.identity, mode="interrupted")["state"], "submitting")
+        self.runtime.close()
+        self.runtime = Runtime(self.path, clock=lambda: self.now[0])
+        self.assertEqual(self.runtime.recover(run_id, **self.identity)["state"], "uncertain")
+        self.assertEqual(self.runtime.readback(run_id, **self.identity)["effect_status"], "unknown")
+        with self.assertRaises(ValueError):
+            self.runtime.submit(run_id, **self.identity)
+        self.assertTrue(self.runtime.verify_chain(run_id))
+
+
+if __name__ == "__main__":
+    unittest.main()

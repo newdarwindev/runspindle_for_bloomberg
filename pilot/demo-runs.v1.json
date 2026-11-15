@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "evidence_level": "deterministic_synthetic_demo",
+  "live_connection": false,
+  "traces": [
+    {
+      "mode": "success",
+      "run_id": "synthetic-success",
+      "before_readback_state": "pending_readback",
+      "before_readback_effect": "unverified",
+      "after_readback_state": "recorded",
+      "after_readback_effect": "confirmed",
+      "operation_id": "40db6173b351f5c6d7e6a7942b1082af10a0291185fce552f7ecd61e70ab4804",
+      "chain_valid": true,
+      "events": [
+        {
+          "action": "create",
+          "actor_id": "synthetic-operator",
+          "artifact_hash": "f8e9a0e85da27f47b6a7cc171a9fecf0aa147f61298fd23b000bb934ba4250d5",
+          "at": "2026-11-15T12:00:00+00:00",
+          "draft_hash": null,
+          "effect_status": "none",
+          "operation_id": null,
+          "revision": 1,
+          "state": "setup"
+        },
+        {
+          "action": "preview",
+          "actor_id": "synthetic-operator",
+          "artifact_hash": "f8e9a0e85da27f47b6a7cc171a9fecf0aa147f61298fd23b000bb934ba4250d5",
+          "at": "2026-11-15T12:00:00+00:00",
+          "draft_hash": "bbf2d711e99e88aa01895fa68f4a536a1a437e398bf8a4d0b8399197dae6369e",
+          "effect_status": "none",
+          "operation_id": null,
+          "revision": 2,
+          "state": "preview"
+        },
+        {
+          "action": "approve",
+          "actor_id": "synthetic-operator",
+          "artifact_hash": "f8e9a0e85da27f47b6a7cc171a9fecf0aa147f61298fd23b000bb934ba4250d5",
+          "at": "2026-11-15T12:00:00+00:00",
+          "draft_hash": "bbf2d711e99e88aa01895fa68f4a536a1a437e398bf8a4d0b8399197dae6369e",
+          "effect_status": "none",
+          "operation_id": "40db6173b351f5c6d7e6a7942b1082af10a0291185fce552f7ecd61e70ab4804",
+          "revision": 3,
+          "state": "approved"
+        },
+        {
+          "action": "begin_submission",
+          "actor_id": "synthetic-operator",
+          "artifact_hash": "f8e9a0e85da27f47b6a7cc171a9fecf0aa147f61298fd23b000bb934ba4250d5",
+          "at": "2026-11-15T12:00:00+00:00",
+          "draft_hash": "bbf2d711e99e88aa01895fa68f4a536a1a437e398bf8a4d0b8399197dae6369e",
+          "effect_status": "pending",
+          "operation_id": "40db6173b351f5c6d7e6a7942b1082af10a0291185fce552f7ecd61e70ab4804",
+          "revision": 4,
+          "state": "submitting"
+        },
+        {
+          "action": "adapter_response",
+          "actor_id": "synthetic-operator",
+          "artifact_hash": "f8e9a0e85da27f47b6a7cc171a9fecf0aa147f61298fd23b000bb934ba4250d5",
+          "at": "2026-11-15T12:00:00+00:00",
+          "draft_hash": "bbf2d711e99e88aa01895fa68f4a536a1a437e398bf8a4d0b8399197dae6369e",
+          "effect_status": "unverified",
+          "operation_id": "40db6173b351f5c6d7e6a7942b1082af10a0291185fce552f7ecd61e70ab4804",
+          "revision": 5,
+          "state": "pending_readback"
+        },
+        {
+          "action": "readback_confirmed",
+          "actor_id": "synthetic-operator",
+          "artifact_hash": "f8e9a0e85da27f47b6a7cc171a9fecf0aa147f61298fd23b000bb934ba4250d5",
+          "at": "2026-11-15T12:00:00+00:00",
+          "draft_hash": "bbf2d711e99e88aa01895fa68f4a536a1a437e398bf8a4d0b8399197dae6369e",
+          "effect_status": "confirmed",
+          "operation_id": "40db6173b351f5c6d7e6a7942b1082af10a0291185fce552f7ecd61e70ab4804",
+          "revision": 6,
+          "state": "recorded"
+        }
+      ]
+    },
+    {
+      "mode": "timeout_after_commit",
+      "run_id": "synthetic-timeout",
+      "before_readback_state": "uncertain",
+      "before_readback_effect": "unknown",
+      "after_readback_state": "recorded",
+      "after_readback_effect": "confirmed",
+      "operation_id": "5ba3f542be67edf3d5c1fce48a25dae337ef072032fa0ed4d6edfff3e235f460",
+      "chain_valid": true,
+      "events": [
+        {
+          "action": "create",
+          "actor_id": "synthetic-operator",
+          "artifact_hash": "f8e9a0e85da27f47b6a7cc171a9fecf0aa147f61298fd23b000bb934ba4250d5",
+          "at": "2026-11-15T12:00:00+00:00",
+          "draft_hash": null,
+          "effect_status": "none",
+          "operation_id": null,
+          "revision": 1,
+          "state": "setup"
+        },
+        {
+          "action": "preview",
+          "actor_id": "synthetic-operator",
+          "artifact_hash": "f8e9a0e85da27f47b6a7cc171a9fecf0aa147f61298fd23b000bb934ba4250d5",
+          "at": "2026-11-15T12:00:00+00:00",
+          "draft_hash": "bbf2d711e99e88aa01895fa68f4a536a1a437e398bf8a4d0b8399197dae6369e",
+          "effect_status": "none",
+          "operation_id": null,
+          "revision": 2,
+          "state": "preview"
+        },
+        {
+          "action": "approve",
+          "actor_id": "synthetic-operator",
+          "artifact_hash": "f8e9a0e85da27f47b6a7cc171a9fecf0aa147f61298fd23b000bb934ba4250d5",
+          "at": "2026-11-15T12:00:00+00:00",
+          "draft_hash": "bbf2d711e99e88aa01895fa68f4a536a1a437e398bf8a4d0b8399197dae6369e",
+          "effect_status": "none",
+          "operation_id": "5ba3f542be67edf3d5c1fce48a25dae337ef072032fa0ed4d6edfff3e235f460",
+          "revision": 3,
+          "state": "approved"
+        },
+        {
+          "action": "begin_submission",
+          "actor_id": "synthetic-operator",
+          "artifact_hash": "f8e9a0e85da27f47b6a7cc171a9fecf0aa147f61298fd23b000bb934ba4250d5",
+          "at": "2026-11-15T12:00:00+00:00",
+          "draft_hash": "bbf2d711e99e88aa01895fa68f4a536a1a437e398bf8a4d0b8399197dae6369e",
+          "effect_status": "pending",
+          "operation_id": "5ba3f542be67edf3d5c1fce48a25dae337ef072032fa0ed4d6edfff3e235f460",
+          "revision": 4,
+          "state": "submitting"
+        },
+        {
+          "action": "adapter_timeout",
+          "actor_id": "synthetic-operator",
+          "artifact_hash": "f8e9a0e85da27f47b6a7cc171a9fecf0aa147f61298fd23b000bb934ba4250d5",
+          "at": "2026-11-15T12:00:00+00:00",
+          "draft_hash": "bbf2d711e99e88aa01895fa68f4a536a1a437e398bf8a4d0b8399197dae6369e",
+          "effect_status": "unknown",
+          "operation_id": "5ba3f542be67edf3d5c1fce48a25dae337ef072032fa0ed4d6edfff3e235f460",
+          "revision": 5,
+          "state": "uncertain"
+        },
+        {
+          "action": "readback_confirmed",
+          "actor_id": "synthetic-operator",
+          "artifact_hash": "f8e9a0e85da27f47b6a7cc171a9fecf0aa147f61298fd23b000bb934ba4250d5",
+          "at": "2026-11-15T12:00:00+00:00",
+          "draft_hash": "bbf2d711e99e88aa01895fa68f4a536a1a437e398bf8a4d0b8399197dae6369e",
+          "effect_status": "confirmed",
+          "operation_id": "5ba3f542be67edf3d5c1fce48a25dae337ef072032fa0ed4d6edfff3e235f460",
+          "revision": 6,
+          "state": "recorded"
+        }
+      ]
+    }
+  ]
+}
