@@ -44,6 +44,8 @@ lease and deadline. There is no session rebinding or multi-operator role
 model in this slice, so an expired session may require manual repair outside
 this prototype. The local journal is a separate logical readback path in one
 database, not an independent external acceptance source.
+The [security review pack](../operations/security-review-v0.1.md) documents
+synthetic failure injection, monitoring, revocation, and rollback quarantine.
 
 ## Recovery and schema
 

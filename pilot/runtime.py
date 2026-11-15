@@ -1,10 +1,11 @@
 """SQLite-backed synthetic paper-run coordinator. No live adapters or trading."""
 import hashlib
 import json
+import re
 import sqlite3
 import uuid
 from contextlib import contextmanager
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
@@ -15,6 +16,13 @@ SCHEMA_VERSION = 1
 RUNTIME_VERSION = "0.2.0"
 MODEL_VERSION = "none"
 DESTINATION = DESTINATION_ROUTE
+OBSERVATION_FIELDS = {"instrument_id", "prior_date", "current_date", "source_timestamp",
+                      "prior_close", "current_close", "cash_dividend", "entitled", "fresh",
+                      "no_other_corporate_action"}
+SOURCE_RECEIPT_FIELDS = {"adapter_version", "status", "route", "requested_instrument",
+                         "fixture_id", "fixture_sha256", "observed_at", "max_age_seconds",
+                         "entitlement"}
+SYNTHETIC_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$")
 
 
 def canonical(value):
@@ -43,7 +51,13 @@ def paper_decision(observation):
     if not all(observation.get(key) for key in
                ("instrument_id", "prior_date", "current_date", "source_timestamp")):
         raise ValueError("Exact instrument, dates, and source timestamp required")
-    if observation["current_date"] <= observation["prior_date"]:
+    try:
+        prior_date = date.fromisoformat(observation["prior_date"])
+        current_date = date.fromisoformat(observation["current_date"])
+    except (TypeError, ValueError) as exc:
+        raise ValueError("Closing dates must be ISO dates") from exc
+    parse_time(observation["source_timestamp"])
+    if current_date <= prior_date:
         raise ValueError("Closing dates are not ordered")
     if not all(observation.get(key) is True for key in
                ("entitled", "fresh", "no_other_corporate_action")):
@@ -60,6 +74,15 @@ def paper_decision(observation):
     adjusted = (current + dividend - prior) / prior
     return {"raw_return": str(raw), "cash_adjusted_return": str(adjusted),
             "decision": "pass" if raw < 0 < adjusted else "pause"}
+
+
+def validate_observation(observation, instrument_id):
+    if not isinstance(observation, dict) or set(observation) != OBSERVATION_FIELDS:
+        raise ValueError("Observation must contain only the ten allowed fields")
+    if (not isinstance(instrument_id, str) or not SYNTHETIC_ID.fullmatch(instrument_id) or
+            observation["instrument_id"] != instrument_id):
+        raise ValueError("Observation instrument differs from selected synthetic target")
+    paper_decision(observation)
 
 
 class Runtime:
@@ -129,7 +152,9 @@ class Runtime:
             previous = event["event_hash"]
             last = json.loads(event["payload"])
         run = self.status(run_id)
-        return last is not None and all(last.get(key) == run.get(key) for key in
+        return last is not None and run.get("artifact_hash") == digest(canonical(run.get("observation"))) \
+            and (run.get("draft_hash") == digest(canonical(run.get("draft"))) if run.get("draft") else run.get("draft_hash") is None) \
+            and all(last.get(key) == run.get(key) for key in
                                         ("revision", "state", "effect_status", "operation_id", "artifact_hash", "draft_hash")) \
             and last.get("source_receipt_hash") == (digest(canonical(run.get("source_receipt"))) if run.get("source_receipt") else None) \
             and (last.get("destination_receipts_hash") == digest(canonical(run.get("destination_receipts", [])))
@@ -178,10 +203,13 @@ class Runtime:
             raise ValueError("Actor, account, session, and instrument required")
         if not account_id.startswith("synthetic:"):
             raise PermissionError("Only synthetic accounts are permitted")
-        if observation.get("instrument_id") != instrument_id:
-            raise ValueError("Observation instrument differs from selected target")
-        if source_receipt and (source_receipt.get("status") != "ok" or
-                               source_receipt.get("requested_instrument") != instrument_id):
+        validate_observation(observation, instrument_id)
+        if source_receipt is not None and (not isinstance(source_receipt, dict) or
+                               source_receipt.get("status") != "ok" or
+                               source_receipt.get("requested_instrument") != instrument_id or
+                               source_receipt.get("route") != SOURCE_ROUTE or
+                               source_receipt.get("entitlement") != "confirmed" or
+                               set(source_receipt) != SOURCE_RECEIPT_FIELDS):
             raise ValueError("Source receipt does not match accepted observation")
         if parse_time(lease_until) <= self.clock() or parse_time(deadline) <= self.clock():
             raise ValueError("Lease and deadline must be in the future")
@@ -237,8 +265,7 @@ class Runtime:
                 raise ValueError("Revision unavailable after submission or takeover")
             if run.get("source_receipt"):
                 raise ValueError("Adapter-backed observation requires a new sourced run")
-            if observation.get("instrument_id") != run["instrument_id"]:
-                raise ValueError("Revised observation differs from selected target")
+            validate_observation(observation, run["instrument_id"])
             run["observation"] = observation
             run["artifact_hash"] = digest(canonical(observation))
             run["draft"] = None; run["draft_hash"] = None
@@ -338,4 +365,28 @@ class Runtime:
             else:
                 raise ValueError("Control action unavailable from current state")
             self._write(run, action, actor_id)
+        return self.status(run_id)
+
+    def revoke(self, run_id, *, actor_id, account_id, session_id):
+        """Fence new work after a lease expires; preserve unknown effects."""
+        with self._transaction():
+            run = self.status(run_id)
+            self._identity(run, actor_id, account_id, session_id)
+            if run["state"] != "cancelled":
+                run["state"] = "cancelled"
+                run["approval_actor"] = None
+                self._write(run, "revoke", actor_id)
+        return self.status(run_id)
+
+    def quarantine_after_restore(self, run_id, *, actor_id, account_id, session_id):
+        """Manual rollback fence: unknown later effects must be reconciled."""
+        with self._transaction():
+            run = self.status(run_id)
+            self._identity(run, actor_id, account_id, session_id)
+            if run["state"] not in ("approved", "submitting", "pending_readback", "uncertain"):
+                raise ValueError("Only a possibly effected run can be quarantined")
+            run["state"] = "uncertain"
+            run["effect_status"] = "unknown"
+            run["approval_actor"] = None
+            self._write(run, "quarantine_after_restore", actor_id)
         return self.status(run_id)
