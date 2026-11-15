@@ -1,0 +1,904 @@
+{
+  "schema_version": 1,
+  "evidence_level": "synthetic_source_transcription",
+  "source_sha256": "7f746cf3a0a8fb90c8d680704f13ee3a7ef87a3bd7604a97c5917abbd2a37a57",
+  "ranked_sha256": "8cc48be8f3d2e805292ea75b91640128919bf069b1c5f5fe410411d92f43e93d",
+  "fixtures": [
+    {
+      "id": 1,
+      "name": "Hearthspan Fuel",
+      "slice": 1,
+      "scope": "Cross-system business workflow",
+      "editorial_rank": 4,
+      "inputs": {
+        "terminal_observation": "A weekly fuel tender names a specific ICE gasoil delivery month. The Terminal’s Futures Contract Table (CT <GO>) identifies the contract. Its official settlement of $690/t sets the customer price at $708/t under the agreed formula. A rolling front-month quote can refer to a different contract.",
+        "assumptions": "Fictional business and synthetic amounts. The scenario assumes authorized Terminal access, applicable data usage rights, and access to the listed destination systems. Some BFIX and FBAK uses require additional licensing, and BVAL requires applicable access."
+      },
+      "decision_rule_source": "Match two 50-tonne supplier holds averaging $699/t landed. Draft the quote in the ERP. Pause if either hold expires before the customer’s bid deadline or the settlement is provisional.",
+      "expected_check_source": "Dispatcher confirms both holds and the owner approves the quote. Delivery receipts, a $70,800 paid invoice, and $69,900 in supplier bills verify the margin.",
+      "illustrative_outcome": "$900 gross margin on a 100-tonne delivery",
+      "source_urls": [
+        "https://assets.bbhub.io/professional/sites/10/Proprietary-Commodity-Data-on-Bloomberg-Brochure.pdf",
+        "https://assets.bbhub.io/professional/sites/10/Bloomberg-US-Treasury-Future-Tracker-Indices-Methodology.pdf",
+        "https://www.ice.com/products/34361119/Low-Sulphur-Gasoil-Futures/specs"
+      ],
+      "alternative_urls": [
+        "https://www.agiboo.com/wp-content/uploads/2021/02/Agiblocks-Productsheet-V1.pdf"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 2,
+      "name": "Switchyard Components",
+      "slice": 1,
+      "scope": "Cross-system business workflow",
+      "editorial_rank": 9,
+      "inputs": {
+        "terminal_observation": "A supplier misses a delivery. Supply Chain Analysis (SPLC <GO>) links both backup distributors to the same upstream manufacturer. Verify whether they share a source before quoting either.",
+        "assumptions": "Fictional business and synthetic amounts. The scenario assumes authorized Terminal access, applicable data usage rights, and access to the listed destination systems. Some BFIX and FBAK uses require additional licensing, and BVAL requires applicable access."
+      },
+      "decision_rule_source": "Match the part in the ERP and look for stock from another approved manufacturer in supplier portals. Draft a $650 rush charge against $200 incremental freight. Pause if the lot’s manufacturer is unconfirmed.",
+      "expected_check_source": "Buyer verifies the lot certificate and approves the quote. Proof of delivery, the paid rush charge, and the freight bill verify the $450.",
+      "illustrative_outcome": "$450 incremental margin on a rush replacement",
+      "source_urls": [
+        "https://professional.content.cirrus.bloomberg.com/professional2023/insights/markets/trade-war-and-tariffs-anatomy-of-winners-and-losers/"
+      ],
+      "alternative_urls": [
+        "https://www.interos.ai/solutions/procurement-risk"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 3,
+      "name": "Tern Guarantee Brokers",
+      "slice": 1,
+      "scope": "Cross-system business workflow",
+      "editorial_rank": 5,
+      "inputs": {
+        "terminal_observation": "A weekly guarantee review finds the issuing bank’s Fitch issuer rating fell to BBB+ in Credit Rating Profile (CRPR <GO>). The beneficiary’s agreement requires A−. The rating must belong to the legal entity that issued the guarantee.",
+        "assumptions": "Fictional business and synthetic amounts. The scenario assumes authorized Terminal access, applicable data usage rights, and access to the listed destination systems. Some BFIX and FBAK uses require additional licensing, and BVAL requires applicable access."
+      },
+      "decision_rule_source": "Match the downgrade to affected guarantees in the CRM. Pull quotes from approved banks’ portals and draft the replacement request. Pause if the named issuer could be a subsidiary or branch.",
+      "expected_check_source": "Broker verifies the entity and approves outreach. The beneficiary accepts the replacement before the old guarantee is released. The issued guarantee, acceptance, and paid fee invoice close the job.",
+      "illustrative_outcome": "$1,200 replacement placement fee",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/10/Ratings-Fact-Sheet.pdf"
+      ],
+      "alternative_urls": [
+        "https://rivo-support.surecomp.com/hc/en-us/articles/4409692795025-Guarantees-in-Rivo",
+        "https://rivo-support.surecomp.com/hc/en-us/articles/24245074968849-How-to-request-the-Amendment-for-Outgoing-Guarantee-in-Rivo-as-a-Corporate"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 4,
+      "name": "Clearsill Bond Desk",
+      "slice": 1,
+      "scope": "Cross-system business workflow",
+      "editorial_rank": 14,
+      "inputs": {
+        "terminal_observation": "An estate submits a thinly traded bond. Its written mandate sets a reserve at 98% of the Terminal’s BVAL evaluated bid and requires a BVAL Score of at least 6. A bid of 94.00 with a score of 7 sets a 92.12 reserve. A dealer quote supplies neither BVAL input.",
+        "assumptions": "Fictional business and synthetic amounts. The scenario assumes authorized Terminal access, applicable data usage rights, and access to the listed destination systems. Some BFIX and FBAK uses require additional licensing, and BVAL requires applicable access."
+      },
+      "decision_rule_source": "Compare firm bids from two dealer portals on a net clean-price basis. Stage the best bid at 93.00. Pause on a low BVAL Score, expired bid, or inconsistent treatment of accrued interest.",
+      "expected_check_source": "Broker and executor approve the bid. Match the trade confirmation to settled custody cash and the $300 commission posting.",
+      "illustrative_outcome": "$300 commission on a settled estate bond sale",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/10/750114_Navigate-every-market.pdf",
+        "https://professional.bloomberg.com/products/data/enterprise-catalog/pricing/evaluated-pricing/"
+      ],
+      "alternative_urls": [
+        "https://www.ice.com/fixed-income-data-services/fixed-income/ice-bonds/portfolio-auction"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 5,
+      "name": "Lantern Film Receipts",
+      "slice": 1,
+      "scope": "Cross-system business workflow",
+      "editorial_rank": 1,
+      "inputs": {
+        "terminal_observation": "A monthly distributor statement converts €80,000 into $87,200. The contract specifies the 16:00 London Bloomberg FX fixing for that date. BFIX <GO> shows $1.1000 per euro, so the expected payout is $88,000. A live FX quote addresses a different pricing question.",
+        "assumptions": "Fictional business and synthetic amounts. The scenario assumes authorized Terminal access, applicable data usage rights, and access to the listed destination systems. Some BFIX and FBAK uses require additional licensing, and BVAL requires applicable access."
+      },
+      "decision_rule_source": "Reconcile the payout in the royalty workbook and draft an $800 dispute in the distributor portal. Pause if the statement combines settlement dates or omits deductions.",
+      "expected_check_source": "Rights manager approves the claim. Match the accepted adjustment to the $800 bank receipt, then invoice the $160 success fee and track payment.",
+      "illustrative_outcome": "20% of collected royalty shortfalls",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/27/BFIX-Methodology.pdf"
+      ],
+      "alternative_urls": [
+        "https://waldhorn.ai/platform/royalty-audits"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 6,
+      "name": "Juniper Reset Audit",
+      "slice": 1,
+      "scope": "Cross-system business workflow",
+      "editorial_rank": 6,
+      "inputs": {
+        "terminal_observation": "A quarterly coupon notice arrives for a legacy note that names Bloomberg’s three-month USD LIBOR fallback. FBAK <GO> shows an all-in rate of 4.62161% for the original fixing date. The servicer used 4.88322% before the note margin. Overnight SOFR alone cannot reproduce the tenor-specific fallback.",
+        "assumptions": "Fictional business and synthetic amounts. The scenario assumes authorized Terminal access, applicable data usage rights, and access to the listed destination systems. Some BFIX and FBAK uses require additional licensing, and BVAL requires applicable access."
+      },
+      "decision_rule_source": "Recalculate the coupon from the signed note and draft a $10,464.40 dispute in the servicer portal on $16 million for 90/360. Pause if an amendment changes the fallback or fixing date.",
+      "expected_check_source": "Treasury approves the claim after checking the signed terms. A corrected notice and the $10,464.40 cash credit verify recovery and trigger the success-fee invoice.",
+      "illustrative_outcome": "A fee when a borrower recovers excess interest",
+      "source_urls": [
+        "https://assets.bbhub.io/professional/sites/27/Fallbacks_FAQ_V14.1_Apr-2025.pdf",
+        "https://data.bloomberglp.com/professional/sites/10/IBOR-Fallbacks-Technical-Note.pdf"
+      ],
+      "alternative_urls": [
+        "https://www.finbridge.de/trends/2020/7/20/implementing-the-ibor-transition-in-and-around-loaniq"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 7,
+      "name": "Sable Mandate Audit",
+      "slice": 1,
+      "scope": "Cross-system business workflow",
+      "editorial_rank": 2,
+      "inputs": {
+        "terminal_observation": "A quarter-end administrator invoice uses the 1.30% unhedged Bloomberg Global Aggregate return. The signed mandate names the USD-hedged total-return series, which shows 2.00% in the Terminal’s Index Browser (IN <GO>). The account returned 1.80%, so its agreed excess-return fee is zero.",
+        "assumptions": "Fictional business and synthetic amounts. The scenario assumes authorized Terminal access, applicable data usage rights, and access to the listed destination systems. Some BFIX and FBAK uses require additional licensing, and BVAL requires applicable access."
+      },
+      "decision_rule_source": "Compare the signed benchmark schedule with the administrator’s workbook. Draft a $2,000 reversal request. Pause if a side letter changes the benchmark or its effective date.",
+      "expected_check_source": "Controller approves the request. Match the amended fee statement to the $2,000 custodian credit before invoicing Sable’s fee.",
+      "illustrative_outcome": "A success fee on reversed performance charges",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/10/Bloomberg-Index-Publications-Fixed-Income-Index-Methodology.pdf",
+        "https://assets.bbhub.io/professional/sites/10/775677865_Chinese_Bonds_SFCT_DIG.pdf",
+        "https://www.ssga.com/library-content/products/fund-docs/etfs/emea/supplements/fund-sup-02-spdr-bloomberg-global-aggregate-bond-en.pdf"
+      ],
+      "alternative_urls": [
+        "https://www.fundrecs.com/share-class-performance-reconciliation"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 8,
+      "name": "Quay Distribution Claims",
+      "slice": 1,
+      "scope": "Cross-system business workflow",
+      "editorial_rank": 3,
+      "inputs": {
+        "terminal_observation": "A weekly review finds a missing payment on a transferred position. The Terminal’s Corporate Actions Calendar and Dividend History (CACT <GO> and DVD <GO>) identify a $0.80 special cash dividend for the exact security. The event amount and payment date identify the cash entry to trace.",
+        "assumptions": "Fictional business and synthetic amounts. The scenario assumes authorized Terminal access, applicable data usage rights, and access to the listed destination systems. Some BFIX and FBAK uses require additional licensing, and BVAL requires applicable access."
+      },
+      "decision_rule_source": "Reconcile 6,000 entitled shares against cash journals in the former and current custodian portals. Draft a $4,800 inquiry. Pause if the old account’s ledger is unavailable or another entry could represent the same payment.",
+      "expected_check_source": "Adviser confirms entitlement and approves the claim. Match the former custodian’s resolution to the $4,800 credit at the receiving custodian, then bill the recovery fee.",
+      "illustrative_outcome": "A fee on dividends recovered after custody transfers",
+      "source_urls": [
+        "https://assets.bbhub.io/professional/sites/10/Bloomberg-Global-Equity-Indices-Non-Market-Cap-Corporate-Action-Methodology_May2023.pdf",
+        "https://data.bloomberglp.com/professional/sites/10/Dividends-Forecast-Fact-Sheet.pdf"
+      ],
+      "alternative_urls": [
+        "https://www.dtcc.com/products-and-services/asset-services/corporate-actions-processing/claimconnect"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 9,
+      "name": "Earnings beat with raised guidance",
+      "slice": 2,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 33,
+      "inputs": {
+        "terminal_observation": "Before earnings, save the consensus from EE <GO>. Afterward, check the release in CN <GO>. The company reports adjusted EPS of $1.08 versus $1.00 expected and guides to a full-year midpoint of $4.76 versus $4.50 consensus.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "Approve a paper long if both comparisons clear your rule. Pause if the fiscal periods or accounting definitions differ.",
+      "expected_check_source": "Use HP <GO> for the entry and exit. A move from $52 to $54 gives +$2 per share before costs.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://assets.bbhub.io/professional/sites/10/RMB-Equity-Solutions.pdf",
+        "https://data.bloomberglp.com/professional/sites/10/Getting-Started-Guide-for-Students-English.pdf"
+      ],
+      "alternative_urls": [
+        "https://www.koyfin.com/help/actuals-consensus/"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 10,
+      "name": "Dividend-driven false breakdown",
+      "slice": 2,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 7,
+      "inputs": {
+        "terminal_observation": "A stock closes at $48.90, down from $50.00. DVD <GO> shows a $1.20 cash dividend. Check the same dates in TRA <GO> for dividend-adjusted total return.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "The raw price fell 2.2%, while the price-plus-cash return is +0.2%. Reject a short signal based on the apparent price breakdown. Pause if another corporate action affects the comparison.",
+      "expected_check_source": "Log Pass with the two closes, the dividend, and the adjusted return.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://guides.library.upenn.edu/bloomberg/equities",
+        "https://www.sec.gov/divisions/corpfin/cf-noaction/14a-8/2016/jamesjensen022316-14a8.pdf"
+      ],
+      "alternative_urls": [
+        "https://www.tradingview.com/support/solutions/43000590597-how-to-adjust-data-for-dividends/"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 11,
+      "name": "Buy the cheaper ETF exposure",
+      "slice": 2,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 19,
+      "inputs": {
+        "terminal_observation": "Compare two ETFs tracking the same index with the same currency hedge policy. NAV <GO> shows closing premiums of 0.60% and 0.05%.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "Check that the NAV and price observations use comparable valuation times. If both still qualify, select the lower-premium fund for the paper allocation.",
+      "expected_check_source": "Record the 55 bp premium difference. Compare subsequent total returns for both funds to see how the choice performed.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://professional.content.cirrus.bloomberg.com/professional2023/insights/webinar/etf-go-enhancements/",
+        "https://www.blackrock.com/gls-download/literature/investor-guide/etf-guide-for-institutional-investors.pdf"
+      ],
+      "alternative_urls": [
+        "https://www.etfaction.com/pdf/terminal_user_guide.pdf"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 12,
+      "name": "Payroll surprise with a revision check",
+      "slice": 2,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 34,
+      "inputs": {
+        "terminal_observation": "ECO <GO> shows +170k jobs versus +190k expected, with the prior month revised from +180k to +165k. Use WB <GO> to check whether the two-year Treasury yield moved lower.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "Paper-test a Treasury long when the release, revision, and yield move agree. Pause if the revision or market reaction points the other way.",
+      "expected_check_source": "Mark the same note at entry and exit. A move from 99-12 to 99-18 is a clean-price gain of 6/32 per $100 face before interest and costs.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://data.bloomberglp.com/bat/sites/3/2016/09/LUISS-Bloomberg-Primer.pdf",
+        "https://data.bloomberglp.com/professional/sites/10/LUISS_2018Primer.pdf",
+        "https://www.cmegroup.com/education/courses/introduction-to-treasuries/calculating-us-treasury-pricing"
+      ],
+      "alternative_urls": [
+        "https://tradingeconomics.com/calendar",
+        "https://docs.tradingeconomics.com/economic_calendar/schema/"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 13,
+      "name": "Crude-oil calendar spread",
+      "slice": 2,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 25,
+      "inputs": {
+        "terminal_observation": "Use CT <GO> to select two fixed delivery months. Their same-day settlements are $71.20 and $69.90, a $1.30 near-minus-far spread.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "If the spread crosses your preset threshold, paper-test selling the near month and buying the far month. Pause if either settlement is missing or the near contract is too close to expiry.",
+      "expected_check_source": "Recheck both original contracts at exit. A spread that narrows to $0.90 gives +$0.40 per barrel before costs.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://assets.bbhub.io/professional/sites/10/Proprietary-Commodity-Data-on-Bloomberg-Brochure.pdf",
+        "https://www.ice.com/publicdocs/data/ICE_on_Bloomberg.pdf"
+      ],
+      "alternative_urls": [
+        "https://www.tradingview.com/support/solutions/43000502298-spread-charts-explained/"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 14,
+      "name": "Callable-bond yield filter",
+      "slice": 2,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 15,
+      "inputs": {
+        "terminal_observation": "In YAS <GO>, compare bonds at their recorded prices. Bond A shows 5.80% to maturity and 4.40% to worst. Bond B shows 5.12% to worst.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "With a 5.00% yield-to-worst floor, drop A. Keep B for review if its credit exposure and call terms fit. Pause on incomplete call terms or a stale price.",
+      "expected_check_source": "Log the price and call scenario behind the decision. If B enters the paper book, measure its price change and interest separately from the initial modeled yield.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://professional.content.cirrus.bloomberg.com/professional2023/insights/markets/bloomberg-pro-tips-analyze-and-price-bonds-on-the-go-with-yas-mobile/",
+        "https://www.ohioapt.org/wp-content/uploads/2012/02/9A-Yacobozzi-Principles-of-Investment-Accounting.pdf"
+      ],
+      "alternative_urls": [
+        "https://www.interactivebrokers.com/support/faq/content/109012775"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 15,
+      "name": "Earnings straddle break-even",
+      "slice": 2,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 23,
+      "inputs": {
+        "terminal_observation": "Check the event date in EVTS <GO>. In OMON <GO>, find a $100-strike call and put with the same expiry after earnings. Their combined paper purchase price is $6 per share.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "Compare the trade thesis with the $94 and $106 expiry break-evens. Pause if the earnings date is uncertain or either option quote is stale.",
+      "expected_check_source": "At expiry, $108 gives +$2 per share and $103 gives −$3 per share before costs.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://assets.bbhub.io/professional/sites/10/Bloomberg_SeeAllSides.pdf",
+        "https://data.bloomberglp.com/professional/sites/4/BLPAPI-Core-User-Guide.pdf",
+        "https://www.optionseducation.org/strategies/all-strategies/long-straddle"
+      ],
+      "alternative_urls": [
+        "https://optionstrat.com/tutorials/options-builder",
+        "https://optionstrat.com/build/straddle"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 16,
+      "name": "FX forward hurdle",
+      "slice": 2,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 24,
+      "inputs": {
+        "terminal_observation": "In FRD <GO>, check the outright EUR/USD forward for the intended value date. Spot is 1.1000, while the three-month forward is 1.1050. Use 1.1050 as the pre-cost hurdle for a paper long EUR forward.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "Approve the paper test if the thesis clears the forward hurdle by your required margin. Pause if the value date or quote direction is ambiguous.",
+      "expected_check_source": "On the value date, compare against spot. 1.1120 gives +$700 on €100,000 before costs.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/4/BLPAPI-Core-User-Guide.pdf",
+        "https://www.iimb.ac.in/ccmrm/file/Getting-Started-Bloomberg-Basics.pdf"
+      ],
+      "alternative_urls": [
+        "https://www.lseg.com/en/data-analytics/products/workspace/sales-traders/workspace-fx-trading"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 17,
+      "name": "Cash-and-stock merger spread",
+      "slice": 3,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 40,
+      "inputs": {
+        "terminal_observation": "Find a pending deal in MA <GO> and confirm its terms in CN <GO>. $20 cash plus 0.5 acquirer shares worth $60 each implies $50 of consideration for a target trading at $48.80.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "Model buying 100 target shares and shorting 50 acquirer shares. Pause if the exchange ratio floats or the terms change.",
+      "expected_check_source": "Confirm the closing terms. Closing as signed gives +$120 gross. If the deal breaks, mark both legs using HP <GO>.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://assets.bbhub.io/professional/sites/10/RMB-Equity-Solutions.pdf",
+        "https://data.bloomberglp.com/professional/sites/10/Getting-Started-Guide-for-Students-English.pdf"
+      ],
+      "alternative_urls": [
+        "https://www.insidearbitrage.com/merger-arbitrage/?dealType=Cash+Plus+Stock"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 18,
+      "name": "Buyback that actually shrinks share count",
+      "slice": 3,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 20,
+      "inputs": {
+        "terminal_observation": "Read repurchase cash outflow in FA <GO> and verify period-end shares in CF <GO>. The company spent $200 million repurchasing stock, while shares outstanding went from 100 million to 101 million.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "Require a net decline in shares for this buyback signal. Pause if a split or mismatched reporting periods distort the comparison.",
+      "expected_check_source": "Record Pass on the buyback signal. The filings show 1% net share-count growth.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/10/189913_CDS_REF_Fundamentals_SFCT_DIG.pdf",
+        "https://data.bloomberglp.com/professional/sites/10/2018_Bloomberg_GEI_Overview.pdf"
+      ],
+      "alternative_urls": [
+        "https://www.koyfin.com/features/financial-analysis/"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 19,
+      "name": "Bond repricing after a completed refinance",
+      "slice": 3,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 37,
+      "inputs": {
+        "terminal_observation": "DDIS <GO> shows $650 million due within 12 months. Company news confirms $500 million of those maturities was retired. Check that the maturity schedule reflects the retirement.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "Paper-test the remaining bond once the schedule shows $150 million due. Pause if repayment is pending or the new debt changes the bond’s priority.",
+      "expected_check_source": "Mark the same bond in HP <GO>. A clean-price move from 94 to 96 gives +$2 per $100 face.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/10/750114_Navigate-every-market.pdf",
+        "https://data.bloomberglp.com/professional/sites/10/Getting-Started-Guide-for-Students-English.pdf"
+      ],
+      "alternative_urls": [
+        "https://octus.com/products/mcp-connector/resources/"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 20,
+      "name": "DV01-matched Treasury steepener",
+      "slice": 3,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 29,
+      "inputs": {
+        "terminal_observation": "In YAS <GO>, reprice a two-year and ten-year note after a 1 bp yield change. The respective sensitivities are $20 and $80 per $100,000 face.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "Paper long $400,000 face of the two-year and short $100,000 face of the ten-year. Both legs start at $80/bp. Pause if their pricing dates differ.",
+      "expected_check_source": "If yields rise 2 bp and 8 bp, the first-order gain is about $480. Verify it against both notes’ closing prices.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://professional.content.cirrus.bloomberg.com/professional2023/insights/markets/bloomberg-pro-tips-analyze-and-price-bonds-on-the-go-with-yas-mobile/",
+        "https://knowledgehub.ghamfin.org/wp-content/uploads/2024/06/Fixed-Income-Analysis.pdf"
+      ],
+      "alternative_urls": [
+        "https://www.cmegroup.com/tools-information/quikstrike/treasury-analytics.html",
+        "https://www.cmegroup.com/tools-information/quikstrike/quikstrike-treasury-analytics-user-guide.html"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 21,
+      "name": "Three-leg FX quote check",
+      "slice": 3,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 18,
+      "inputs": {
+        "terminal_observation": "Use FXC <GO> and ALLQ <GO> to check USD → EUR → JPY → USD. The relevant quotes are 1.1002 EUR/USD ask, 165.00 EUR/JPY bid, and 150.05 USD/JPY ask.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "Calculate the round trip using the correct side of each quote. Pause if timestamps or quote sources are incompatible.",
+      "expected_check_source": "$100,000 comes back as $99,948.51. Record Pass and the $51.49 modeled loss before fees.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/10/2017/03/BLPAPI-Core-User-Guide.pdf"
+      ],
+      "alternative_urls": [
+        "https://help.ctrader.com/ctrader-algo/references/MarketData/Symbols/Symbols/GetSymbol/"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 22,
+      "name": "Put spread when downside skew is steep",
+      "slice": 3,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 26,
+      "inputs": {
+        "terminal_observation": "OVDV <GO> shows 31% implied volatility for the 25-delta put and 23% at the money for the same maturity. OMON <GO> shows a $100/$95 put spread at a $2 net debit.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "If the downside thesis clears the $98 expiry break-even, paper-buy the higher strike and sell the lower strike. Pause if the leg quotes are stale.",
+      "expected_check_source": "At $94 at expiry, the spread pays $5 per share, for +$3 per share before costs. At or above $100, it loses the $2 debit.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/4/2015/03/education-brochure.pdf",
+        "https://data.bloomberglp.com/professional/sites/4/BLPAPI-Core-User-Guide.pdf",
+        "https://www.optionseducation.org/strategies/all-strategies/bear-put-spread"
+      ],
+      "alternative_urls": [
+        "https://orats.com/option-scanner",
+        "https://orats.com/backtester"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 23,
+      "name": "Fed meeting versus the contract’s monthly average",
+      "slice": 3,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 30,
+      "inputs": {
+        "terminal_observation": "Check the meeting date in WIRP <GO> and select the exact Fed Funds futures month in CT <GO>. 15 days at 4.50% and 15 at 4.25% imply a 4.375% monthly average and 95.625 settlement.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "Compare the scenario with a contract mark of 95.575. Stage a paper long if the difference clears your threshold. Pause if the effective date of the rate change is unclear.",
+      "expected_check_source": "If the contract settles at 95.625, the paper gain is 0.050 price points.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/10/LUISS_2018Primer.pdf",
+        "https://assets.bbhub.io/professional/sites/10/Proprietary-Commodity-Data-on-Bloomberg-Brochure.pdf",
+        "https://www.cmegroup.com/markets/interest-rates/stirs/30-day-federal-fund/specs"
+      ],
+      "alternative_urls": [
+        "https://www.cmegroup.com/articles/2023/understanding-the-cme-group-fedwatch-tool-methodology.html"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 24,
+      "name": "Peer divergence with an earnings check",
+      "slice": 3,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 38,
+      "inputs": {
+        "terminal_observation": "COMP <GO> shows stock A trailing same-sector peer B by 4 percentage points over five sessions. Check EVTS <GO> for earnings before the planned exit.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "If the event calendar is clear and company news leaves the thesis intact, paper long $10,000 of A and short $10,000 of B. Pause on a confirmed company-specific shock.",
+      "expected_check_source": "Mark both legs at the planned exit. A up 2% and B down 1% gives +$300 before costs.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/10/AdamLei-WP.pdf",
+        "https://assets.bbhub.io/professional/sites/10/Bloomberg_SeeAllSides.pdf"
+      ],
+      "alternative_urls": [
+        "https://www.quantconnect.com/docs/v2/writing-algorithms/algorithm-framework/alpha/supported-models"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 25,
+      "name": "Refinery margin spread",
+      "slice": 4,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 28,
+      "inputs": {
+        "terminal_observation": "In CT <GO> and HP <GO>, match one delivery month and settlement date across WTI, RBOB gasoline, and ULSD. At $72/bbl, $2.15/gal, and $2.40/gal, the 3:2:1 crack spread is $21.80 per barrel of crude input.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "To test a widening margin, paper-buy two gasoline contracts and one diesel contract against three crude contracts. Pause if dates, units, or settlements differ.",
+      "expected_check_source": "Reprice the original contracts. A spread of $23.80 at exit gives +$2 per barrel of crude input.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://assets.bbhub.io/professional/sites/10/Proprietary-Commodity-Data-on-Bloomberg-Brochure.pdf",
+        "https://www.cmegroup.com/articles/2024/trading-crack-spreads.html"
+      ],
+      "alternative_urls": [
+        "https://www.cmegroup.com/tools-information/calc_crack.html"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 26,
+      "name": "Analyst upgrades hidden by a flat consensus",
+      "slice": 4,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 39,
+      "inputs": {
+        "terminal_observation": "In EEB <GO>, compare two snapshots for the same fiscal period. Headline EPS consensus stays at $2.00. Eight continuing analysts each raise estimates by $0.10, while two higher estimates drop out.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "Test the revision signal using analysts present in both snapshots. Pause if the EPS basis or contributor identities cannot be matched.",
+      "expected_check_source": "Save both contributor lists. A paper entry at $41.00 and exit at $42.50 gives +$1.50 per share.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://assets.bbhub.io/professional/sites/10/Bloomberg_SeeAllSides.pdf"
+      ],
+      "alternative_urls": [
+        "https://go.factset.com/hubfs/Website_Downloads/Statistical%20Package%20Integration/Docs%203.0/estimates-ondemand.pdf"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 27,
+      "name": "ADR premium after currency conversion",
+      "slice": 4,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 31,
+      "inputs": {
+        "terminal_observation": "Verify in CF <GO> that one ADR represents two ordinary shares. Use overlapping price marks in GIP <GO> and the exchange rate from FXC <GO>. At €25 per ordinary share and $1.10 per euro, parity is $55.00 against an ADR at $57.20.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "Paper-short one ADR against two ordinary shares if the gap clears your hurdle. Pause if prices come from different trading hours or the receipt ratio changed.",
+      "expected_check_source": "If parity stays at $55.00 and the ADR falls to $55.50, the two-leg paper gain is $1.70 per ADR.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/10/2018_Bloomberg_GEI_Overview.pdf",
+        "https://data.bloomberglp.com/professional/sites/10/Getting-Started-Guide-for-Students-English.pdf",
+        "https://data.bloomberglp.com/professional/sites/4/BLPAPI-Core-User-Guide.pdf",
+        "https://www.sec.gov/files/litigation/admin/2018/33-10586.pdf"
+      ],
+      "alternative_urls": [
+        "https://depositaryreceipts.citi.com/adr/guides/unspresource.aspx?pageId=3&subpageid=173"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 28,
+      "name": "Days to cover doubled without new shorts",
+      "slice": 4,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 10,
+      "inputs": {
+        "terminal_observation": "SI <GO> shows 10 million reported shares short at both observations. Average daily volume falls from 2 million to 1 million, so days to cover rises from 5 to 10.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "Pass if the trade requires evidence of new short positions. Use the same volume lookback at both report dates and pause if the share counts are affected by a split.",
+      "expected_check_source": "Log Pass, the unchanged reported short position, and the two volume averages.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://www.buyins.net/articles/gamesshortsellersplay.pdf",
+        "https://faq.library.upenn.edu/business/faq/45338"
+      ],
+      "alternative_urls": [
+        "https://docs.ortex.com/docs/dataset-short-interest",
+        "https://docs.ortex.com/reference/stock_short_dtc_retrieve"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 29,
+      "name": "Daily-reset ETF holding-period test",
+      "slice": 4,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 11,
+      "inputs": {
+        "terminal_observation": "Confirm the 2× daily objective in the fund description or filing. Read two benchmark closes in HP <GO>. The benchmark rises 10% and then falls 10%.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "Compound the daily leveraged returns of +20% and −20%. Pass if the planned holding period depends on getting twice the benchmark’s cumulative return.",
+      "expected_check_source": "The benchmark ends −1%. The idealized daily-reset position ends −4%, or −$400 on $10,000. If testing an actual ETF, check its own closing marks.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://www.blackrock.com/gls-download/literature/investor-guide/etf-guide-for-institutional-investors.pdf",
+        "https://data.bloomberglp.com/professional/sites/10/2018_Bloomberg_GEI_Overview.pdf",
+        "https://www.investor.gov/introduction-investing/general-resources/news-alerts/alerts-bulletins/investor-alerts/sec"
+      ],
+      "alternative_urls": [
+        "https://testfol.io/letf/"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 30,
+      "name": "Closed-end fund tender with proration",
+      "slice": 4,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 22,
+      "inputs": {
+        "terminal_observation": "Read the offer in CF <GO>. The fund trades at $9.20 and offers 98% of NAV. At a $10.00 NAV, accepted shares pay $9.80.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "Stress-test 25% acceptance. The remaining shares must be worth $9.00 each to break even. Pass if your residual-share mark is $8.95.",
+      "expected_check_source": "The modeled position is worth $9.1625 per share, or $37.50 below entry per 1,000 shares. After the offer, compare with published acceptance and the residual close.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/10/2018_Bloomberg_GEI_Overview.pdf",
+        "https://www.sec.gov/Archives/edgar/data/1836057/000119312524182259/d843794dex99a1i.htm"
+      ],
+      "alternative_urls": [
+        "https://documents.nuveen.com/Documents/CEFConnect/Viewer.aspx?download=1&uniqueId=8b2fd832-ea21-4dfc-82b1-2f059b613c59"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 31,
+      "name": "Copper positioning unwind",
+      "slice": 4,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 35,
+      "inputs": {
+        "terminal_observation": "In COT <GO>, compare the same futures-only Managed Money series. Longs fall from 150,000 to 130,000 contracts while shorts stay at 60,000. Record the report’s publication time.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "If price confirms the unwind under your rule, paper-short a fixed-month copper contract at the first eligible mark after publication. Pause if report categories differ.",
+      "expected_check_source": "Mark the same contract at exit. A move from $4.20 to $4.15 per pound gives +$0.05 per pound.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://data.bloomberglp.com/promo/sites/12/208558_BCOM-June2018Outlook.pdf",
+        "https://www.cftc.gov/MarketReports/CommitmentsofTraders/ReleaseSchedule/index.htm",
+        "https://publicreporting.cftc.gov/stories/s/r4w3-av2u"
+      ],
+      "alternative_urls": [
+        "https://www.barchart.com/futures/disaggregated-cot-reports"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 32,
+      "name": "Inflation compensation versus real yields",
+      "slice": 4,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 16,
+      "inputs": {
+        "terminal_observation": "Use ILBE <GO> and matched-tenor yields. The 10-year nominal yield rises from 4.10% to 4.30%, while the real yield rises from 1.70% to 1.75%. Inflation breakeven widens from 2.40% to 2.55%.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "A widening-breakeven thesis clears this check. A trade that requires a 20 bp rise in real yields fails it. Pause if the maturities or timestamps differ.",
+      "expected_check_source": "A later breakeven of 2.67% verifies a +12 bp spread move from the paper entry. Use the two bonds’ prices separately to calculate position P&L.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://assets.bbhub.io/professional/sites/10/LUISS-Bloomberg-Primer.pdf"
+      ],
+      "alternative_urls": [
+        "https://fred.stlouisfed.org/series/t5yie"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 33,
+      "name": "Treasury auction tail on the same issue",
+      "slice": 5,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 36,
+      "inputs": {
+        "terminal_observation": "Read the auction result in Bloomberg News. The high yield is 4.34% versus a 4.31% pre-auction when-issued yield for the same CUSIP. The auction tailed by 3 bp.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "If the tail qualifies under your rule, approve a paper short at the first eligible mark after the result. Pause if the pre-auction quote is stale or belongs to a different issue.",
+      "expected_check_source": "Mark the same note. An entry at 99-09 and cover at 99-02 produces +7/32 per $100 face in clean-price P&L.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://www.newyorkfed.org/medialibrary/media/research/staff_reports/sr1188.pdf",
+        "https://data.bloomberglp.com/professional/sites/10/Bloomberg-Index-Publications-Fixed-Income-Index-Methodology.pdf",
+        "https://www.cmegroup.com/education/courses/introduction-to-treasuries/calculating-us-treasury-pricing"
+      ],
+      "alternative_urls": [
+        "https://helious.io/data/treasury-auction-tails"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 34,
+      "name": "Transferable rights subscription economics",
+      "slice": 5,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 27,
+      "inputs": {
+        "terminal_observation": "In CACS <GO> and CF <GO>, check transferability, expiry, and the subscription ratio. Four rights at $0.65 each plus a $12 subscription price imply $14.60 per new share. The common stock trades at $15.00.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "Approve a paper subscription if the difference clears your cost hurdle. Pause if the rights are nontransferable or the assumed settlement misses the offer deadline.",
+      "expected_check_source": "Mark the new common share after the modeled exercise. At $14.90, the paper gain is $0.30 per new share.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://assets.bbhub.io/professional/sites/10/Bloomberg-Global-Equity-Indices-Non-Market-Cap-Corporate-Action-Methodology_May2023.pdf",
+        "https://data.bloomberglp.com/professional/sites/10/2018_Bloomberg_GEI_Overview.pdf",
+        "https://www.sec.gov/Archives/edgar/data/1487610/000121390026032989/ea0277906-03_424b2.htm"
+      ],
+      "alternative_urls": [
+        "https://www.ice.com/fixed-income-data-services/data-and-analytics/pricing-and-analytics/reference-data/corporate-actions"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 35,
+      "name": "ETF asset growth versus investor inflows",
+      "slice": 5,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 17,
+      "inputs": {
+        "terminal_observation": "Check FFLO <GO> and the fund’s NAV and share-count history. Assets rise from $1.00 billion to $1.05 billion as NAV rises from $20 to $21. Shares outstanding stay at 50 million.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "Require confirmed net inflows for a flow-driven entry. Pause if the NAV and share-count dates differ or a share split affects the comparison.",
+      "expected_check_source": "The NAV change accounts for the full $50 million increase. Record Pass if the reported flow also shows no net inflow.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://www.blackrock.com/gls-download/literature/investor-guide/etf-guide-for-institutional-investors.pdf",
+        "https://www.linkedin.com/posts/bloomberg-professional-service_fflo-go-activity-7269461943877349377-r4UG"
+      ],
+      "alternative_urls": [
+        "https://www.etfaction.com/our-data/",
+        "https://www.etfaction.com/pdf/terminal_user_guide.pdf"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 36,
+      "name": "Continuous futures breakout at contract roll",
+      "slice": 5,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 8,
+      "inputs": {
+        "terminal_observation": "A generic natural-gas chart jumps from $2.70 to $2.90. Use CT <GO> to identify the two contracts and HP <GO> to check both settlements. The old contract went from $2.70 to $2.71 and the new one from $2.89 to $2.90.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "Require a breakout in one actual contract. Pause if the generic chart uses a different roll or adjustment setting.",
+      "expected_check_source": "Log Pass on the $0.20 chart signal. Each fixed contract moved just $0.01 per MMBtu.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://assets.bbhub.io/professional/sites/10/Proprietary-Commodity-Data-on-Bloomberg-Brochure.pdf",
+        "https://data.bloomberglp.com/professional/sites/4/BLPAPI-Core-User-Guide.pdf"
+      ],
+      "alternative_urls": [
+        "https://www.tradingview.com/support/solutions/43000689313-switching-continuous-futures-contracts/",
+        "https://www.tradingview.com/support/solutions/43000685266-how-can-i-enable-backadjustment-for-continuous-futures/"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 37,
+      "name": "Treasury bill discount versus investment yield",
+      "slice": 5,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 12,
+      "inputs": {
+        "terminal_observation": "Load the exact Treasury bill and confirm its remaining maturity and quoted basis. A 91-day bill quoted at a 4.50% bank-discount rate costs $98.8625 per $100 face.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "Convert to a comparable investment yield of about 4.615%. Clear a 4.60% hurdle only after confirming the settlement date and matching the yield conventions.",
+      "expected_check_source": "On $10,000 face, record a paper cost of $9,886.25 and redemption of $10,000, for +$113.75 held to maturity.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://professional.content.cirrus.bloomberg.com/professional2023/insights/markets/bloomberg-pro-tips-analyze-and-price-bonds-on-the-go-with-yas-mobile/",
+        "https://treasurydirect.gov/marketable-securities/understanding-pricing/"
+      ],
+      "alternative_urls": [
+        "https://support.microsoft.com/en-us/excel/functions/tbillprice-function",
+        "https://support.microsoft.com/en-us/excel/functions/tbilleq-function"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 38,
+      "name": "Bond price check at the intended trade size",
+      "slice": 5,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 13,
+      "inputs": {
+        "terminal_observation": "For the exact CUSIP, compare TRACE trades in TDH <GO> with dealer quotes in ALLQ <GO>. The last print is 94.00 on $25,000 face. A $500,000 trade printed at 95.80 and the $500,000 ask is 95.95.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "Compare the ask at the intended size with your 95.25 limit. Pass at 95.95. Pause if quote size is missing or the latest trade and quote are stale.",
+      "expected_check_source": "Save both trade sizes and timestamps. The size-matched ask exceeds your limit by 0.70 points, so the paper order stays unfilled.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/10/750114_Navigate-every-market.pdf",
+        "https://www.finra.org/sites/default/files/TRACE_Overview.pdf"
+      ],
+      "alternative_urls": [
+        "https://syndication.finra.org/content/what-trace-and-how-can-it-help-me"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 39,
+      "name": "Intraday volume at a comparable session time",
+      "slice": 5,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 32,
+      "inputs": {
+        "terminal_observation": "Read regular-session intraday volume. At 11:00, the stock has traded 1.2 million shares versus an average of 0.6 million by 11:00 in comparable sessions. That is 2× normal volume for that time.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "Paper-test the breakout only if price also clears your trigger. Pause if one volume reading includes premarket trades or comes from a shortened session.",
+      "expected_check_source": "Record the time and the comparison window. A paper entry at $50.20 and exit at $51.00 gives +$0.80 per share.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/10/Getting-Started-Guide-for-Students-English.pdf",
+        "https://www.valdosta.edu/colleges/business/deans-office/documents/bloomberg-cheat-sheets/charts-and-technical-indicators.pdf"
+      ],
+      "alternative_urls": [
+        "https://www.tradingview.com/support/solutions/43000705489-relative-volume-at-time/"
+      ],
+      "review_status": "unverified_source_prose"
+    },
+    {
+      "id": 40,
+      "name": "VIX futures settlement versus spot VIX",
+      "slice": 5,
+      "scope": "Terminal-only paper workflow",
+      "editorial_rank": 21,
+      "inputs": {
+        "terminal_observation": "Use CT <GO> to identify the exact full-size VX futures contract. The future is 19.50 and spot VIX is 16.00. At expiry, VX settles to the Special Opening Quotation.",
+        "assumptions": "Synthetic Terminal-only paper example before costs. Use comparable, available closing or delayed marks. Record the decision and later marks in NOTE <GO>. Live fills require enabled trading access."
+      },
+      "decision_rule_source": "Pass if the short thesis depends on receiving the spot VIX as settlement. If paper-testing a short, record the specific expiry and settlement value to use.",
+      "expected_check_source": "If the Special Opening Quotation is 20.30, a paper short at 19.50 loses $800 per full-size contract at $1,000 per point.",
+      "illustrative_outcome": "",
+      "source_urls": [
+        "https://assets.bbhub.io/professional/sites/10/Proprietary-Commodity-Data-on-Bloomberg-Brochure.pdf",
+        "https://www.cboe.com/tradable-products/vix/vix-futures/specifications",
+        "https://www.cboe.com/tradable_products/vix/vix_futures/specifications"
+      ],
+      "alternative_urls": [
+        "https://www.cboe.com/markets/us/futures/market-statistics/settlement/futures/daily"
+      ],
+      "review_status": "unverified_source_prose"
+    }
+  ]
+}
