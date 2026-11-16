@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "mode": "unconfigured",
+  "status": "draft",
+  "partner_code": null,
+  "consent_ref": null,
+  "operator_id": null,
+  "reviewer_id": null,
+  "account_id": null,
+  "session_id": null,
+  "allowed_effects": [],
+  "task_boundary_ref": null,
+  "budget_ref": null,
+  "holdout_policy_ref": null,
+  "rights_decision_ref": null,
+  "withdrawal_procedure_ref": null,
+  "support_owner": null,
+  "incident_route_ref": null,
+  "acceptance_criteria_ref": null,
+  "evaluation_protocol_sha256": null,
+  "pilot_start_at": null,
+  "pilot_end_at": null,
+  "max_eligible_episodes": null,
+  "gate_refs": {
+    "2": null,
+    "4": null,
+    "5": null,
+    "6": null,
+    "7": null,
+    "8": null
+  }
+}
