@@ -13,7 +13,7 @@ from pilot.adapters import (DESTINATION_ROUTE, SOURCE_ROUTE, ObservationRequest,
                             SyntheticObservationAdapter, SyntheticPaperDestination)
 
 SCHEMA_VERSION = 1
-RUNTIME_VERSION = "0.2.0"
+RUNTIME_VERSION = "0.3.0"
 MODEL_VERSION = "none"
 DESTINATION = DESTINATION_ROUTE
 OBSERVATION_FIELDS = {"instrument_id", "prior_date", "current_date", "source_timestamp",
@@ -85,6 +85,10 @@ def validate_observation(observation, instrument_id):
     paper_decision(observation)
 
 
+class IntegrityError(RuntimeError):
+    """Persisted state cannot be trusted for observation or execution."""
+
+
 class Runtime:
     def __init__(self, path, clock=utc_now, id_factory=uuid.uuid4):
         self.path = Path(path)
@@ -129,21 +133,52 @@ class Runtime:
         try:
             yield
             self.db.execute("COMMIT")
-        except Exception:
+        except BaseException:
             self.db.execute("ROLLBACK")
             raise
 
-    def status(self, run_id):
+    @contextmanager
+    def _consistent_read(self):
+        # Reuse an enclosing write transaction; otherwise bind both queries to
+        # one SQLite snapshot so a concurrent valid transition is not corruption.
+        owned = not self.db.in_transaction
+        if owned:
+            self.db.execute("BEGIN")
+        try:
+            yield
+        finally:
+            if owned:
+                self.db.execute("ROLLBACK")
+
+    def _snapshot(self, run_id):
         row = self.db.execute("SELECT data FROM runs WHERE id=?", (run_id,)).fetchone()
         if row is None:
             raise KeyError(run_id)
-        return json.loads(row["data"])
+        try:
+            run = json.loads(row["data"])
+            if not self._verify_snapshot(run_id, run):
+                raise IntegrityError("Run integrity verification failed")
+        except (ValueError, TypeError, AttributeError):
+            raise IntegrityError("Run integrity verification failed") from None
+        return run
+
+    def status(self, run_id):
+        with self._consistent_read():
+            return self._snapshot(run_id)
 
     def events(self, run_id):
         return [dict(row) for row in self.db.execute(
             "SELECT seq,payload,prev_hash,event_hash FROM events WHERE run_id=? ORDER BY seq", (run_id,))]
 
     def verify_chain(self, run_id):
+        try:
+            with self._consistent_read():
+                self._snapshot(run_id)
+            return True
+        except (IntegrityError, KeyError):
+            return False
+
+    def _verify_snapshot(self, run_id, run):
         previous = "0" * 64
         last = None
         for event in self.events(run_id):
@@ -151,14 +186,11 @@ class Runtime:
                 return False
             previous = event["event_hash"]
             last = json.loads(event["payload"])
-        run = self.status(run_id)
-        return last is not None and run.get("artifact_hash") == digest(canonical(run.get("observation"))) \
-            and (run.get("draft_hash") == digest(canonical(run.get("draft"))) if run.get("draft") else run.get("draft_hash") is None) \
-            and all(last.get(key) == run.get(key) for key in
-                                        ("revision", "state", "effect_status", "operation_id", "artifact_hash", "draft_hash")) \
-            and last.get("source_receipt_hash") == (digest(canonical(run.get("source_receipt"))) if run.get("source_receipt") else None) \
-            and (last.get("destination_receipts_hash") == digest(canonical(run.get("destination_receipts", [])))
-                 if "destination_receipts_hash" in last else not run.get("destination_receipts"))
+        # Legacy events without full-snapshot binding cannot authorize new work.
+        # Never silently seal a previously unverified snapshot during recovery.
+        return (isinstance(run, dict) and run.get("id") == run_id
+                and isinstance(last, dict)
+                and last.get("snapshot_sha256") == digest(canonical(run)))
 
     def _write(self, run, action, actor):
         run["revision"] += 1
@@ -167,6 +199,7 @@ class Runtime:
             "SELECT event_hash FROM events WHERE run_id=? ORDER BY seq DESC LIMIT 1", (run["id"],)).fetchone()
         prev_hash = previous[0] if previous else "0" * 64
         payload = canonical({"action": action, "actor_id": actor, "at": self.clock().isoformat(),
+                             "snapshot_sha256": digest(canonical(run)),
                              "revision": run["revision"], "state": run["state"],
                              "effect_status": run["effect_status"],
                              "operation_id": run["operation_id"],

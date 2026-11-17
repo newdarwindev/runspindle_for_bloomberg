@@ -67,6 +67,7 @@
           "effect_status": "none",
           "operation_id": null,
           "revision": 1,
+          "snapshot_sha256": "38323763fab35c458c1681d1bcbb45f63831ba6fd30bf71e2e6e45f2d1a61335",
           "source_receipt_hash": "bdcfbe21f5bcb52e3bbfd9c52f7cc2cd537a7e961208db207f79b02208fb9941",
           "state": "setup"
         },
@@ -80,6 +81,7 @@
           "effect_status": "none",
           "operation_id": null,
           "revision": 2,
+          "snapshot_sha256": "4ca8e5f582ebbe3d524b01d68426361c3750ce0719844ac4f724138ae3845ea1",
           "source_receipt_hash": "bdcfbe21f5bcb52e3bbfd9c52f7cc2cd537a7e961208db207f79b02208fb9941",
           "state": "preview"
         },
@@ -93,6 +95,7 @@
           "effect_status": "none",
           "operation_id": "40db6173b351f5c6d7e6a7942b1082af10a0291185fce552f7ecd61e70ab4804",
           "revision": 3,
+          "snapshot_sha256": "3afa08b443751094a22ee893527f4ed5493e2f21dcd15ecaf5c39e4f1fa59029",
           "source_receipt_hash": "bdcfbe21f5bcb52e3bbfd9c52f7cc2cd537a7e961208db207f79b02208fb9941",
           "state": "approved"
         },
@@ -106,6 +109,7 @@
           "effect_status": "pending",
           "operation_id": "40db6173b351f5c6d7e6a7942b1082af10a0291185fce552f7ecd61e70ab4804",
           "revision": 4,
+          "snapshot_sha256": "a5c8709c008dafc99332b174e179ee01ad10b2eaa4665db27d39345b3a44a627",
           "source_receipt_hash": "bdcfbe21f5bcb52e3bbfd9c52f7cc2cd537a7e961208db207f79b02208fb9941",
           "state": "submitting"
         },
@@ -119,6 +123,7 @@
           "effect_status": "unverified",
           "operation_id": "40db6173b351f5c6d7e6a7942b1082af10a0291185fce552f7ecd61e70ab4804",
           "revision": 5,
+          "snapshot_sha256": "e8d8ce0d60871d17305f854180324cce47118cd89b35e180b987791b7eaea5ec",
           "source_receipt_hash": "bdcfbe21f5bcb52e3bbfd9c52f7cc2cd537a7e961208db207f79b02208fb9941",
           "state": "pending_readback"
         },
@@ -132,6 +137,7 @@
           "effect_status": "confirmed",
           "operation_id": "40db6173b351f5c6d7e6a7942b1082af10a0291185fce552f7ecd61e70ab4804",
           "revision": 6,
+          "snapshot_sha256": "bdce440547f3e554e5607f93c6e5accafea36d6f0a9cd1386d49a57ee3ee3eb7",
           "source_receipt_hash": "bdcfbe21f5bcb52e3bbfd9c52f7cc2cd537a7e961208db207f79b02208fb9941",
           "state": "recorded"
         }
@@ -193,6 +199,7 @@
           "effect_status": "none",
           "operation_id": null,
           "revision": 1,
+          "snapshot_sha256": "9b8f38fe52d058b61c2d1e8768b6a1023e7cfdbe5ff236edbdbe2fc6451aed4e",
           "source_receipt_hash": "bdcfbe21f5bcb52e3bbfd9c52f7cc2cd537a7e961208db207f79b02208fb9941",
           "state": "setup"
         },
@@ -206,6 +213,7 @@
           "effect_status": "none",
           "operation_id": null,
           "revision": 2,
+          "snapshot_sha256": "76b042c3ed7e09ec24f1eaf32b8b4fa0b47dc6b48f3bd9b4aba20cbfa415cc33",
           "source_receipt_hash": "bdcfbe21f5bcb52e3bbfd9c52f7cc2cd537a7e961208db207f79b02208fb9941",
           "state": "preview"
         },
@@ -219,6 +227,7 @@
           "effect_status": "none",
           "operation_id": "5ba3f542be67edf3d5c1fce48a25dae337ef072032fa0ed4d6edfff3e235f460",
           "revision": 3,
+          "snapshot_sha256": "ce6e05474e9d4df5e2a4fd099caf40329785745933bca636a880e1d9ff71cb6e",
           "source_receipt_hash": "bdcfbe21f5bcb52e3bbfd9c52f7cc2cd537a7e961208db207f79b02208fb9941",
           "state": "approved"
         },
@@ -232,6 +241,7 @@
           "effect_status": "pending",
           "operation_id": "5ba3f542be67edf3d5c1fce48a25dae337ef072032fa0ed4d6edfff3e235f460",
           "revision": 4,
+          "snapshot_sha256": "31cff5bc492c7e0ce520118d464eed8bbcc509baa01a2456d2b3cf9e83c41763",
           "source_receipt_hash": "bdcfbe21f5bcb52e3bbfd9c52f7cc2cd537a7e961208db207f79b02208fb9941",
           "state": "submitting"
         },
@@ -245,6 +255,7 @@
           "effect_status": "unknown",
           "operation_id": "5ba3f542be67edf3d5c1fce48a25dae337ef072032fa0ed4d6edfff3e235f460",
           "revision": 5,
+          "snapshot_sha256": "da5f6f7a406d1d58a7f212652fa5d33be380b541e5b670c062483cc912b0644c",
           "source_receipt_hash": "bdcfbe21f5bcb52e3bbfd9c52f7cc2cd537a7e961208db207f79b02208fb9941",
           "state": "uncertain"
         },
@@ -258,6 +269,7 @@
           "effect_status": "confirmed",
           "operation_id": "5ba3f542be67edf3d5c1fce48a25dae337ef072032fa0ed4d6edfff3e235f460",
           "revision": 6,
+          "snapshot_sha256": "997122d7685b4411b84164475c81a415ea392e8f78beb7a1961791f66f288991",
           "source_receipt_hash": "bdcfbe21f5bcb52e3bbfd9c52f7cc2cd537a7e961208db207f79b02208fb9941",
           "state": "recorded"
         }

@@ -27,6 +27,7 @@ def verify_case10(db_path, run_id, fixture, protocol):
     db = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
     db.row_factory = sqlite3.Row
     try:
+        db.execute("BEGIN")
         row = db.execute("SELECT data FROM runs WHERE id=?", (run_id,)).fetchone()
         if row is None:
             return {"status": "synthetic_rejected", "errors": ["run missing"]}
@@ -42,6 +43,8 @@ def verify_case10(db_path, run_id, fixture, protocol):
             actions.append(json.loads(event["payload"]))
         if not actions or actions[-1].get("revision") != run.get("revision") or actions[-1].get("state") != run.get("state"):
             errors.append("final event differs from run snapshot")
+        if not actions or actions[-1].get("snapshot_sha256") != sha_obj(run) or run.get("id") != run_id:
+            errors.append("full snapshot integrity mismatch")
         if run.get("artifact_hash") != sha_obj(run.get("observation")):
             errors.append("observation artifact hash mismatch")
         receipt = run.get("source_receipt") or {}

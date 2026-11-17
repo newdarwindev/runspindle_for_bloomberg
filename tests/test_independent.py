@@ -42,6 +42,11 @@ class IndependentVerifierTests(unittest.TestCase):
             runtime.readback(run_id, **identity)
             self.assertEqual(verify_case10(path, run_id, FIXTURE, PROTOCOL)["status"], "synthetic_verified")
             changed = runtime.status(run_id)
+            altered = {**changed, "max_submissions": 2}
+            runtime.db.execute("UPDATE runs SET data=? WHERE id=?", (json.dumps(altered), run_id))
+            result = verify_case10(path, run_id, FIXTURE, PROTOCOL)
+            self.assertEqual(result["status"], "synthetic_rejected")
+            self.assertIn("full snapshot integrity mismatch", result["errors"])
             changed["draft"]["cash_adjusted_return"] = "0.9"
             runtime.db.execute("UPDATE runs SET data=? WHERE id=?", (json.dumps(changed), run_id))
             result = verify_case10(path, run_id, FIXTURE, PROTOCOL)

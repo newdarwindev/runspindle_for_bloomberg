@@ -1,4 +1,4 @@
-# Synthetic run coordinator (v0.2.0)
+# Synthetic run coordinator (v0.3.0)
 
 `pilot/runtime.py` is a local SQLite composition for the [case 10 draft](case-10-contract-v0.1.md).
 It is a test runtime, not a Bloomberg integration or an authorized pilot.
@@ -22,7 +22,13 @@ approval actor, allowed action, one-submission budget, lease, deadline, state,
 effect status, and runtime/model versions. Every transition appends an actor
 and timestamp event with a hash of the prior event. SQLite triggers reject
 event updates and deletes. `verify_chain` checks the chain and its final
-snapshot. This detects ordinary corruption; it is not tamper-proof against a
+snapshot. Every new event binds the entire canonical run snapshot, including
+owner/account/session, approval, allowed actions, leases, budgets and versions.
+Status and all transitions verify the chain and that binding before returning a
+run or invoking a destination. Reads use one SQLite snapshot, including while a
+concurrent valid writer commits. Precommit cancellation-style exceptions roll
+back the transition; interruption during commit may still have an uncertain
+outcome and requires reopening and reconciliation. This detects ordinary corruption; it is not tamper-proof against a
 database administrator and has no external integrity anchor.
 
 The only destination is a local simulated journal table. A submission first
@@ -52,7 +58,12 @@ synthetic failure injection, monitoring, revocation, and rollback quarantine.
 On restart, open the same database. If a run is `submitting`, call `recover`
 with the bound identity; it becomes `uncertain`, never auto-submits. Read back
 before any further decision. The schema version is 1. Unknown versions fail
-closed. Before changing schema, take a consistent SQLite backup (for example,
+closed. Pre-v0.3.0 runs lack the full-snapshot binding: status and transitions
+reject them instead of silently sealing potentially changed state. Do not edit
+old events or replay a possibly submitted operation. Retain such stores for
+inspection and independent reconciliation; migration tooling is still required.
+New synthetic runs can be created in a fresh store. The SQL schema remains 1;
+the event contract change is identified by runtime version 0.3.0. Before changing schema, take a consistent SQLite backup (for example,
 Python `sqlite3.Connection.backup`), migrate a copy, and validate event chains.
 Rollback restores the backup; do not merge later journal effects into an old
 snapshot without reconciliation. A production migration and rollback tool
@@ -62,3 +73,19 @@ This slice does not authenticate operator identity, source data, or journal
 receipts beyond the supplied IDs and local store. It has no live credentials,
 secrets, network calls, external effects, measured savings, or pilot acceptance.
 Issue #2's permission gate remains in force.
+
+## Integrity verification scope
+
+`python3 -m unittest discover -s tests -p test_runtime_integrity.py -v` tests
+14 corrupted authority/state fields across six read/action paths in fresh
+processes, with independent zero-effect SQLite observations. A deliberate guard
+mutation produces an actual local journal row, showing the effect fence matters.
+Malformed state, legacy unsealed events, concurrent valid writes and precommit
+interruption are covered separately. The independent case-10 verifier also
+checks the full snapshot using its own hashing implementation and read snapshot.
+Raw `events()` and `monitor.py` counters remain diagnostic data, not verified
+execution authority or external acceptance. Unkeyed hashes do not resist a
+database writer recomputing valid seals. Whole-store rollback/replay also remains
+outside this local integrity check; no external trust anchor, authenticated
+identity or live rights have been added. Issues #5 and #8 remain open for the
+integrated pilot gates.
