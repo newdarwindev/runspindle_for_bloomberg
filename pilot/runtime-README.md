@@ -89,3 +89,20 @@ database writer recomputing valid seals. Whole-store rollback/replay also remain
 outside this local integrity check; no external trust anchor, authenticated
 identity or live rights have been added. Issues #5 and #8 remain open for the
 integrated pilot gates.
+
+### Final submission fence
+
+The second submission transaction rechecks the bound operator/account/session,
+lease, deadline and source freshness immediately before the simulated destination
+call. A pause after the committed `begin_submission` event is not continuing
+authority. If these checks fail, no destination call occurs: the retained
+`submitting` intent and consumed submission budget remain for recovery. Reopening
+and `recover` changes it to `uncertain`; readback may report absence as
+inconclusive, never reset the budget or automatically resubmit.
+
+`tests/test_runtime_final_authority.py` crosses each time boundary between the
+two transactions in both success and timeout-after-commit modes. It counts zero
+destination calls, reopens in a fresh process, and independently checks zero
+journal rows and exactly one submission intent. This is a local transaction
+boundary check, not remote revocation or proof against expiry during an already
+running external action. A future real adapter needs its own effect-time fence.

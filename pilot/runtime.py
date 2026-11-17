@@ -341,6 +341,10 @@ class Runtime:
             run = self.status(run_id)
             if run["state"] != "submitting":
                 raise ValueError("Submission fenced by takeover, cancellation, or recovery")
+            # The first transaction can be followed by a long pause. Its
+            # admission is not a grant to execute after lease/source expiry.
+            self._bound(run, actor_id, account_id, session_id)
+            self._source_current(run)
             if mode != "timeout_before_commit":
                 receipt = self.destination.execute(run)
                 if mode == "success":
