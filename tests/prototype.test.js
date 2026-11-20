@@ -28,13 +28,28 @@ test('approval and uncertain effect require readback before review', () => {
   assert.equal(transition(state, 'review').phase, 'review_pending');
 });
 
-test('absent readback and takeover invalidate approval', () => {
+test('inconclusive readback and handback retain uncertainty', () => {
   let state = transition(transition(start(), 'preview', input), 'approve');
   state = transition(state, 'simulate_unknown');
   state = transition(state, 'reconcile_absent');
-  assert.equal(state.phase, 'preview');
+  assert.equal(state.phase, 'uncertain');
+  assert.throws(() => transition(state, 'approve'));
   assert.throws(() => transition(state, 'record'));
   state = transition(state, 'takeover');
   state = transition(state, 'handback');
-  assert.equal(state.phase, 'preview');
+  assert.equal(state.phase, 'uncertain');
+  assert.throws(() => transition(state, 'record'));
+  assert.equal(transition(state, 'reconcile_found').phase, 'recorded');
+});
+
+test('simulated record needs readback and pre-submission handback clears the draft', () => {
+  const approved = transition(transition(start(), 'preview', input), 'approve');
+  const pending = transition(approved, 'record');
+  assert.equal(pending.phase, 'pending_readback');
+  assert.throws(() => transition(pending, 'review'));
+  assert.equal(transition(pending, 'reconcile_found').phase, 'recorded');
+  const returned = transition(transition(approved, 'takeover'), 'handback');
+  assert.equal(returned.phase, 'setup');
+  assert.equal(returned.preview, null);
+  assert.throws(() => transition(returned, 'approve'));
 });

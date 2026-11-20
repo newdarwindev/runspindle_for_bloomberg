@@ -1,11 +1,14 @@
 import json
 import sqlite3
+import subprocess
+import sys
 import tempfile
 import unittest
+from contextlib import closing, contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from pilot.runtime import Runtime
+from pilot.runtime import IntegrityError, Runtime
 
 
 class RuntimeTests(unittest.TestCase):
@@ -126,6 +129,104 @@ class RuntimeTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.runtime.submit(run_id, **self.identity)
         self.assertTrue(self.runtime.verify_chain(run_id))
+
+    def test_handback_preserves_operation_and_draft_for_fresh_process_readback(self):
+        for mode in ("success", "timeout_after_commit", "interrupted"):
+            with self.subTest(mode=mode):
+                run_id = self.approved()
+                submitted = self.runtime.submit(run_id, **self.identity, mode=mode)
+                with closing(sqlite3.connect(self.path)) as observer:
+                    effects = observer.execute("SELECT * FROM journal WHERE operation_id=?",
+                                               (submitted["operation_id"],)).fetchall()
+                self.assertEqual(len(effects), 0 if mode == "interrupted" else 1)
+                self.runtime.control(run_id, "takeover", **self.identity)
+                returned = self.runtime.control(run_id, "handback", **self.identity)
+                self.assertEqual((returned["state"], returned["effect_status"]), ("uncertain", "unknown"))
+                self.assertIsNone(returned["approval_actor"])
+                for field in ("operation_id", "draft", "draft_hash", "submissions"):
+                    self.assertEqual(returned[field], submitted[field])
+                with self.assertRaises(ValueError):
+                    self.runtime.submit(run_id, **self.identity)
+                worker = subprocess.run([sys.executable, "-B", "-c", '''
+import json, sys
+from contextlib import closing
+from pilot.runtime import Runtime
+with closing(Runtime(sys.argv[1])) as r:
+    print(json.dumps(r.readback(sys.argv[2], **json.loads(sys.argv[3]))))
+''', str(self.path), run_id, json.dumps(self.identity)],
+                    cwd=Path(__file__).resolve().parents[1], capture_output=True, text=True, timeout=10)
+                self.assertEqual(worker.returncode, 0, worker.stderr)
+                result = json.loads(worker.stdout)
+                self.assertEqual(result["effect_status"], "unknown" if not effects else "confirmed")
+                with closing(sqlite3.connect(self.path)) as observer:
+                    self.assertEqual(observer.execute("SELECT * FROM journal WHERE operation_id=?",
+                                                      (submitted["operation_id"],)).fetchall(), effects)
+
+    def test_takeover_between_intent_and_effect_blocks_destination(self):
+        run_id = self.approved()
+        original = self.runtime._transaction
+        calls = []
+
+        @contextmanager
+        def handoff_after_commit():
+            with original():
+                yield
+            if self.runtime.status(run_id)["state"] == "submitting":
+                with closing(Runtime(self.path, clock=lambda: self.now[0])) as other:
+                    other.control(run_id, "takeover", **self.identity)
+
+        self.runtime._transaction = handoff_after_commit
+        self.runtime.destination.execute = lambda run: calls.append(run["operation_id"])
+        with self.assertRaisesRegex(ValueError, "Submission fenced"):
+            self.runtime.submit(run_id, **self.identity)
+        self.runtime._transaction = original
+        self.assertEqual(calls, [])
+        self.assertEqual(self.runtime.control(run_id, "handback", **self.identity)["state"], "uncertain")
+        self.assertEqual(self.runtime.readback(run_id, **self.identity)["effect_status"], "unknown")
+        with closing(sqlite3.connect(self.path)) as observer:
+            self.assertEqual(observer.execute("SELECT count(*) FROM journal").fetchone(), (0,))
+
+    def test_receipt_requires_exact_operation_and_explicit_confirmation(self):
+        readback = self.runtime.destination.readback
+        for field, value in (("status", "queued"), ("stage", "execute"), ("route", "other"),
+                             ("operation_id", "other-op"), ("adapter_version", "future"),
+                             ("journal_ref_sha256", None), ("status", "absent_inconclusive"),
+                             ("unreviewed_payload", "synthetic extra field")):
+            with self.subTest(field=field, value=value):
+                run_id = self.approved()
+                run = self.runtime.submit(run_id, **self.identity)
+                original = readback(run)
+                history = self.runtime.events(run_id)
+                self.runtime.destination.readback = lambda _, f=field, v=value: {**original, f: v}
+                rejected = False
+                try:
+                    self.runtime.readback(run_id, **self.identity)
+                except IntegrityError:
+                    rejected = True
+                self.assertEqual(self.runtime.status(run_id), run, "Invalid readback changed durable state")
+                self.assertTrue(rejected)
+                self.assertEqual(self.runtime.events(run_id), history)
+        self.runtime.destination.readback = readback
+        self.assertEqual(self.runtime.readback(run_id, **self.identity)["state"], "recorded")
+
+    def test_quarantined_restore_and_cancel_keep_reconciliation_fenced(self):
+        run_id = self.approved()
+        run = self.runtime.quarantine_after_restore(run_id, **self.identity)
+        self.assertEqual(run["submissions"], 0)
+        self.runtime.db.execute("INSERT INTO journal VALUES (?,?,?,?,?)", (
+            run["operation_id"], run["account_id"], "WRONG", run["draft_hash"], self.now[0].isoformat(),
+        ))
+        self.assertEqual(self.runtime.readback(run_id, **self.identity)["effect_status"], "mismatch")
+        with self.assertRaises(ValueError):
+            self.runtime.revise(run_id, self.observation, **self.identity)
+        self.runtime.control(run_id, "cancel", **self.identity)
+        mismatched = self.runtime.readback(run_id, **self.identity)
+        self.assertEqual((mismatched["state"], mismatched["effect_status"]), ("cancelled", "mismatch"))
+        self.runtime.db.execute("UPDATE journal SET instrument_id=?", (run["instrument_id"],))
+        reconciled = self.runtime.readback(run_id, **self.identity)
+        self.assertEqual((reconciled["state"], reconciled["effect_status"]), ("cancelled", "confirmed"))
+        with self.assertRaises(ValueError):
+            self.runtime.submit(run_id, **self.identity)
 
 
 if __name__ == "__main__":

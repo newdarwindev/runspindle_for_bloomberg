@@ -1,6 +1,8 @@
 /* Synthetic, in-memory Console prototype for catalog case 10. No external calls. */
 (function (root) {
-  const ACTIVE = new Set(['preview', 'approved', 'recorded', 'uncertain']);
+  const BEFORE_SUBMISSION = ['preview', 'approved'];
+  const NEEDS_READBACK = ['pending_readback', 'uncertain'];
+  const ACTIVE = [...BEFORE_SUBMISSION, ...NEEDS_READBACK];
 
   function start() {
     return { phase: 'setup', preview: null, previousPhase: null, events: [] };
@@ -39,21 +41,24 @@
     } else if (action === 'approve') {
       requirePhase('preview'); next.phase = 'approved';
     } else if (action === 'record') {
-      requirePhase('approved'); next.phase = 'recorded';
+      requirePhase('approved'); next.phase = 'pending_readback';
     } else if (action === 'simulate_unknown') {
       requirePhase('approved'); next.phase = 'uncertain';
     } else if (action === 'reconcile_found') {
-      requirePhase('uncertain'); next.phase = 'recorded';
+      requirePhase(...NEEDS_READBACK); next.phase = 'recorded';
     } else if (action === 'reconcile_absent') {
-      requirePhase('uncertain'); next.phase = 'preview';
+      requirePhase(...NEEDS_READBACK); next.phase = 'uncertain';
     } else if (action === 'review') {
       requirePhase('recorded'); next.phase = 'review_pending';
     } else if (action === 'takeover') {
       requirePhase(...ACTIVE); next.previousPhase = state.phase; next.phase = 'takeover';
     } else if (action === 'handback') {
-      requirePhase('takeover'); next.phase = 'preview'; next.previousPhase = null;
+      requirePhase('takeover');
+      next.phase = NEEDS_READBACK.includes(state.previousPhase) ? 'uncertain' : 'setup';
+      next.previousPhase = null;
+      if (next.phase === 'setup') next.preview = null;
     } else if (action === 'pause') {
-      requirePhase(...ACTIVE); next.phase = 'paused';
+      requirePhase(...BEFORE_SUBMISSION); next.phase = 'paused';
     } else if (action === 'cancel') {
       requirePhase('setup', ...ACTIVE, 'paused', 'takeover'); next.phase = 'cancelled';
     } else {
@@ -77,7 +82,9 @@
 
   function render() {
     phase.textContent = state.phase.replace('_', ' ').toUpperCase();
-    summary.textContent = state.preview
+    summary.textContent = NEEDS_READBACK.includes(state.phase)
+      ? 'The simulated effect requires readback. An inconclusive result keeps this run paused for reconciliation.'
+      : state.preview
       ? `${state.preview.decision}. Raw ${(state.preview.rawReturn * 100).toFixed(1)}%; cash-adjusted ${(state.preview.adjustedReturn * 100).toFixed(1)}%. This is a synthetic preview, not independently accepted.`
       : 'Enter the synthetic observation and preview the rule.';
     history.replaceChildren(...state.events.map(text => {
@@ -87,10 +94,10 @@
     root.document.querySelectorAll('[data-action]').forEach(button => {
       const allowed = {
         preview: ['setup'], approve: ['preview'], record: ['approved'],
-        simulate_unknown: ['approved'], reconcile_found: ['uncertain'],
-        reconcile_absent: ['uncertain'], review: ['recorded'], takeover: [...ACTIVE],
-        handback: ['takeover'], pause: [...ACTIVE],
-        cancel: ['setup', ...ACTIVE, 'paused', 'takeover'], reset: ['setup', ...ACTIVE, 'paused', 'takeover', 'cancelled', 'review_pending']
+        simulate_unknown: ['approved'], reconcile_found: NEEDS_READBACK,
+        reconcile_absent: NEEDS_READBACK, review: ['recorded'], takeover: ACTIVE,
+        handback: ['takeover'], pause: BEFORE_SUBMISSION,
+        cancel: ['setup', ...ACTIVE, 'paused', 'takeover'], reset: ['setup', ...ACTIVE, 'paused', 'takeover', 'cancelled', 'recorded', 'review_pending']
       };
       button.disabled = !allowed[button.dataset.action].includes(state.phase);
     });

@@ -37,8 +37,13 @@ state fence. The `success` response still waits for readback. A timeout after
 commit leaves `uncertain`; readback by operation ID can confirm it. A missing
 readback stays `uncertain` because absence may be inconclusive. A duplicate
 submit is rejected. Cancellation fences new submissions but preserves an
-unknown or confirmed effect for reconciliation. Takeover clears approval;
-handback requires a new preview and approval.
+unknown or confirmed effect for reconciliation. Takeover clears approval. If
+it commits after submission intent and before execution, the destination call
+is fenced. Handback before any possible effect discards the previous draft and
+requires a fresh preview and approval. Handback after a possible effect retains
+the exact draft hash, operation ID and budget and returns to uncertain for
+readback. A mismatch after restore stays fenced from revision and submission,
+even if the restored snapshot reports zero submissions.
 Revising the synthetic observation before submission creates a new revision
 and invalidates the previous draft and approval.
 An adapter-backed observation requires a new sourced run instead of an
@@ -82,6 +87,12 @@ secrets, network calls, external effects, measured savings, or pilot acceptance.
 Issue #2's permission gate remains in force.
 
 ## Integrity verification scope
+
+The handback regression verifies the local journal from a separate SQLite
+connection, then reads back after handback in a fresh process. A second
+connection also takes over between the committed intent and the effect call.
+The synthetic prototype requires an explicit readback before a simulated
+record can enter review and retains uncertainty after an inconclusive result.
 
 `python3 -m unittest discover -s tests -p test_runtime_integrity.py -v` tests
 14 corrupted authority/state fields across six read/action paths in fresh
