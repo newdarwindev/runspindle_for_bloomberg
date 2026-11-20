@@ -55,10 +55,17 @@ synthetic failure injection, monitoring, revocation, and rollback quarantine.
 
 ## Recovery and schema
 
-On restart, open the same database. If a run is `submitting`, call `recover`
+On restart, open the same database with `Runtime(path, create=False)`. If a run is `submitting`, call `recover`
 with the bound identity; it becomes `uncertain`, never auto-submits. Read back
 before any further decision. The schema version is 1. Unknown versions fail
-closed. Pre-v0.3.0 runs lack the full-snapshot binding: status and transitions
+closed. Opening checks the v1 tables and both append-only triggers under one
+SQLite transaction. A missing journal, changed trigger, or missing or duplicated
+version marker blocks opening before the destination adapter is constructed.
+The runtime creates a schema and its version marker in one transaction when
+opening an empty store with creation enabled. The inspection CLI always opens
+an existing store. Supported existing v1 stores preserve their schema and data.
+
+Pre-v0.3.0 runs lack the full-snapshot binding: status and transitions
 reject them instead of silently sealing potentially changed state. Do not edit
 old events or replay a possibly submitted operation. Retain such stores for
 inspection and independent reconciliation; migration tooling is still required.
@@ -89,6 +96,15 @@ database writer recomputing valid seals. Whole-store rollback/replay also remain
 outside this local integrity check; no external trust anchor, authenticated
 identity or live rights have been added. Issues #5 and #8 remain open for the
 integrated pilot gates.
+
+`python3 -m unittest discover -s tests -p test_runtime_schema.py -v` checks v1
+compatibility, incomplete and future schemas, inspection of a missing or empty
+store, concurrent bootstrap and process exit before the schema transaction
+commits. Dropping the journal from a run after simulated submission blocks the
+fresh process with zero destination readback calls. Running that test against
+the prior runtime reaches the independent readback marker and fails. These
+checks exercise SQLite files on a local filesystem. Power loss and recovery
+from a wholly lost or rolled-back store still require separate evidence.
 
 ### Final submission fence
 

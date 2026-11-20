@@ -2,12 +2,13 @@
 """Read a synthetic run's status and append-only event chain."""
 import argparse
 import json
+import sqlite3
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from pilot.runtime import Runtime
+from pilot.runtime import IntegrityError, Runtime
 
 
 def main():
@@ -17,7 +18,10 @@ def main():
     args = parser.parse_args()
     if not args.database.is_file():
         parser.error("Database file does not exist")
-    runtime = Runtime(args.database)
+    try:
+        runtime = Runtime(args.database, create=False)
+    except (IntegrityError, sqlite3.Error):
+        parser.error("Cannot open a compatible synthetic ledger")
     try:
         print(json.dumps({"status": runtime.status(args.run_id),
                           "event_chain_valid": runtime.verify_chain(args.run_id),

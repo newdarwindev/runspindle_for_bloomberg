@@ -13,6 +13,22 @@ from pilot.adapters import (DESTINATION_ROUTE, SOURCE_ROUTE, ObservationRequest,
                             SyntheticObservationAdapter, SyntheticPaperDestination)
 
 SCHEMA_VERSION = 1
+SCHEMA_OBJECTS = {
+    ("table", "schema_meta"): "CREATE TABLE schema_meta(version INTEGER NOT NULL)",
+    ("table", "runs"): "CREATE TABLE runs(id TEXT PRIMARY KEY, data TEXT NOT NULL)",
+    ("table", "events"): """CREATE TABLE events(
+        seq INTEGER PRIMARY KEY AUTOINCREMENT, run_id TEXT NOT NULL,
+        payload TEXT NOT NULL, prev_hash TEXT NOT NULL, event_hash TEXT NOT NULL,
+        FOREIGN KEY(run_id) REFERENCES runs(id))""",
+    ("table", "journal"): """CREATE TABLE journal(
+        operation_id TEXT PRIMARY KEY, account_id TEXT NOT NULL,
+        instrument_id TEXT NOT NULL, draft_hash TEXT NOT NULL,
+        committed_at TEXT NOT NULL)""",
+    ("trigger", "events_no_update"): """CREATE TRIGGER events_no_update BEFORE UPDATE ON events
+        BEGIN SELECT RAISE(ABORT, 'events are append only'); END""",
+    ("trigger", "events_no_delete"): """CREATE TRIGGER events_no_delete BEFORE DELETE ON events
+        BEGIN SELECT RAISE(ABORT, 'events are append only'); END""",
+}
 RUNTIME_VERSION = "0.3.0"
 MODEL_VERSION = "none"
 DESTINATION = DESTINATION_ROUTE
@@ -90,42 +106,42 @@ class IntegrityError(RuntimeError):
 
 
 class Runtime:
-    def __init__(self, path, clock=utc_now, id_factory=uuid.uuid4):
+    def __init__(self, path, clock=utc_now, id_factory=uuid.uuid4, *, create=True):
         self.path = Path(path)
         self.clock = clock
         self.id_factory = id_factory
-        self.db = sqlite3.connect(self.path, isolation_level=None)
-        self.db.row_factory = sqlite3.Row
-        self.db.execute("PRAGMA foreign_keys = ON")
-        self.db.execute("PRAGMA journal_mode = WAL")
-        self._schema()
+        database = self.path if create else self.path.resolve().as_uri() + "?mode=rw"
+        self.db = sqlite3.connect(database, isolation_level=None, uri=not create)
+        try:
+            self.db.row_factory = sqlite3.Row
+            self.db.execute("PRAGMA foreign_keys = ON")
+            self._schema(create=create)
+            self.db.execute("PRAGMA journal_mode = WAL")
+        except BaseException:
+            self.db.close()
+            raise
         self.destination = SyntheticPaperDestination(self.db, clock=clock)
 
     def close(self):
         self.db.close()
 
-    def _schema(self):
-        self.db.executescript("""
-            CREATE TABLE IF NOT EXISTS schema_meta(version INTEGER NOT NULL);
-            CREATE TABLE IF NOT EXISTS runs(id TEXT PRIMARY KEY, data TEXT NOT NULL);
-            CREATE TABLE IF NOT EXISTS events(
-                seq INTEGER PRIMARY KEY AUTOINCREMENT, run_id TEXT NOT NULL,
-                payload TEXT NOT NULL, prev_hash TEXT NOT NULL, event_hash TEXT NOT NULL,
-                FOREIGN KEY(run_id) REFERENCES runs(id));
-            CREATE TABLE IF NOT EXISTS journal(
-                operation_id TEXT PRIMARY KEY, account_id TEXT NOT NULL,
-                instrument_id TEXT NOT NULL, draft_hash TEXT NOT NULL,
-                committed_at TEXT NOT NULL);
-            CREATE TRIGGER IF NOT EXISTS events_no_update BEFORE UPDATE ON events
-                BEGIN SELECT RAISE(ABORT, 'events are append only'); END;
-            CREATE TRIGGER IF NOT EXISTS events_no_delete BEFORE DELETE ON events
-                BEGIN SELECT RAISE(ABORT, 'events are append only'); END;
-        """)
-        versions = [row[0] for row in self.db.execute("SELECT version FROM schema_meta")]
-        if not versions:
-            self.db.execute("INSERT INTO schema_meta VALUES (?)", (SCHEMA_VERSION,))
-        elif versions != [SCHEMA_VERSION]:
-            raise RuntimeError("Unsupported schema version; migrate or restore a compatible backup")
+    def _schema(self, *, create):
+        # The inventory and version are checked under the same lock as first
+        # initialization. A partial schema cannot acquire a fresh journal.
+        with self._transaction():
+            objects = {(kind, name): " ".join(sql.split()) for kind, name, sql in self.db.execute(
+                "SELECT type,name,sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT GLOB 'sqlite_*'")}
+            if not objects and create:
+                for sql in SCHEMA_OBJECTS.values():
+                    self.db.execute(sql)
+                self.db.execute("INSERT INTO schema_meta VALUES (?)", (SCHEMA_VERSION,))
+                return
+            expected = {key: " ".join(sql.split()) for key, sql in SCHEMA_OBJECTS.items()}
+            if objects != expected:
+                raise IntegrityError("Missing or incompatible synthetic ledger schema")
+            versions = [row[0] for row in self.db.execute("SELECT version FROM schema_meta")]
+            if versions != [SCHEMA_VERSION]:
+                raise IntegrityError("Unsupported schema version; migrate or restore a compatible backup")
 
     @contextmanager
     def _transaction(self):
@@ -134,7 +150,8 @@ class Runtime:
             yield
             self.db.execute("COMMIT")
         except BaseException:
-            self.db.execute("ROLLBACK")
+            if self.db.in_transaction:
+                self.db.execute("ROLLBACK")
             raise
 
     @contextmanager
