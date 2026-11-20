@@ -10,12 +10,12 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 from pilot.adapters import (
-    ADAPTER_VERSION,
     DESTINATION_ROUTE,
     SOURCE_ROUTE,
     ObservationRequest,
     SyntheticObservationAdapter,
     SyntheticPaperDestination,
+    paper_readback_receipt,
 )
 
 SCHEMA_VERSION = 1
@@ -44,9 +44,6 @@ OBSERVATION_FIELDS = {"instrument_id", "prior_date", "current_date", "source_tim
 SOURCE_RECEIPT_FIELDS = {"adapter_version", "status", "route", "requested_instrument",
                          "fixture_id", "fixture_sha256", "observed_at", "max_age_seconds",
                          "entitlement"}
-READBACK_FIELDS = {"adapter_version", "stage", "route", "operation_id", "status",
-                   "journal_ref_sha256"}
-READBACK_STATUSES = ("absent_inconclusive", "mismatch", "confirmed")
 UNCONFIRMED_EFFECTS = ("unknown", "unverified", "pending")
 SYNTHETIC_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$")
 
@@ -417,6 +414,24 @@ class Runtime:
                 self._write(run, "recover_interrupted_submission", actor_id)
         return self.status(run_id)
 
+    def _verified_readback(self, run):
+        if not run["operation_id"] or run["destination"] != DESTINATION:
+            raise IntegrityError("Missing exact synthetic readback binding")
+        row = self.db.execute(
+            "SELECT * FROM journal WHERE operation_id=?", (run["operation_id"],)
+        ).fetchone()
+        expected = paper_readback_receipt(run, row)
+        changes = self.db.total_changes
+        observed = self.destination.readback(json.loads(canonical(run)))
+        if not self.db.in_transaction or self.db.total_changes != changes:
+            raise IntegrityError("Destination readback modified its observation transaction")
+        if (type(observed) is not dict
+                or any(type(key) is not str for key in observed)
+                or any(value is not None and type(value) is not str for value in observed.values())
+                or observed != expected):
+            raise IntegrityError("Destination readback receipt differs from the synthetic journal")
+        return expected
+
     def readback(self, run_id, *, actor_id, account_id, session_id):
         with self._transaction():
             run = self.status(run_id)
@@ -425,19 +440,7 @@ class Runtime:
                 raise ValueError("No effect requires readback")
             if run["state"] == "cancelled" and run["effect_status"] == "none":
                 raise ValueError("Cancelled before submission; no effect to read back")
-            receipt = self.destination.readback(run)
-            if (not isinstance(receipt, dict) or set(receipt) != READBACK_FIELDS or
-                    receipt["adapter_version"] != ADAPTER_VERSION or receipt["stage"] != "readback" or
-                    receipt["route"] != run["destination"] or not run["operation_id"] or
-                    receipt["operation_id"] != run["operation_id"] or
-                    receipt["status"] not in READBACK_STATUSES):
-                raise IntegrityError("Destination readback receipt is invalid")
-            reference = receipt["journal_ref_sha256"]
-            if receipt["status"] == "absent_inconclusive":
-                if reference is not None:
-                    raise IntegrityError("Absent readback cannot carry a journal reference")
-            elif not isinstance(reference, str) or not re.fullmatch(r"[0-9a-f]{64}", reference):
-                raise IntegrityError("Destination readback lacks an exact journal reference")
+            receipt = self._verified_readback(run)
             run.setdefault("destination_receipts", []).append(receipt)
             if receipt["status"] == "absent_inconclusive":
                 run["state"] = "uncertain" if run["state"] != "cancelled" else "cancelled"
