@@ -3,6 +3,7 @@ import hashlib
 import json
 import math
 import sqlite3
+from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 
@@ -17,6 +18,25 @@ BASELINE_FIELDS = {"outcome", "authority_ref", "budget_ref", "reviewer_id",
                    "elapsed_seconds", "full_cost"}
 METRICS = ("human_active_seconds", "elapsed_seconds", "quality_errors",
            "full_cost", "support_minutes")
+LEGACY_SCHEMA = (
+    "CREATE TABLE register_meta(plan_hash TEXT PRIMARY KEY, schema_version INTEGER NOT NULL)",
+    """CREATE TABLE episodes(
+        seq INTEGER PRIMARY KEY AUTOINCREMENT, episode_id TEXT NOT NULL UNIQUE,
+        payload TEXT NOT NULL, prev_hash TEXT NOT NULL, row_hash TEXT NOT NULL)""",
+    """CREATE TRIGGER episode_no_update BEFORE UPDATE ON episodes
+        BEGIN SELECT RAISE(ABORT, 'episodes are append only'); END""",
+    """CREATE TRIGGER episode_no_delete BEFORE DELETE ON episodes
+        BEGIN SELECT RAISE(ABORT, 'episodes are append only'); END""",
+)
+INTAKE_SCHEMA = (
+    """CREATE TABLE intake(
+        seq INTEGER PRIMARY KEY, episode_id TEXT NOT NULL UNIQUE, eligible_at TEXT NOT NULL,
+        row_hash TEXT NOT NULL)""",
+    """CREATE TRIGGER intake_no_update BEFORE UPDATE ON intake
+        BEGIN SELECT RAISE(ABORT, 'intake is append only'); END""",
+    """CREATE TRIGGER intake_no_delete BEFORE DELETE ON intake
+        BEGIN SELECT RAISE(ABORT, 'intake is append only'); END""",
+)
 
 
 def canonical(value):
@@ -135,31 +155,74 @@ class PilotRegister:
         self.budget_ref = plan["budget_ref"]
         self.db = sqlite3.connect(self.path, isolation_level=None)
         self.db.row_factory = sqlite3.Row
-        self.db.executescript("""
-            CREATE TABLE IF NOT EXISTS register_meta(plan_hash TEXT PRIMARY KEY, schema_version INTEGER NOT NULL);
-            CREATE TABLE IF NOT EXISTS episodes(
-                seq INTEGER PRIMARY KEY AUTOINCREMENT, episode_id TEXT NOT NULL UNIQUE,
-                payload TEXT NOT NULL, prev_hash TEXT NOT NULL, row_hash TEXT NOT NULL);
-            CREATE TRIGGER IF NOT EXISTS episode_no_update BEFORE UPDATE ON episodes
-                BEGIN SELECT RAISE(ABORT, 'episodes are append only'); END;
-            CREATE TRIGGER IF NOT EXISTS episode_no_delete BEFORE DELETE ON episodes
-                BEGIN SELECT RAISE(ABORT, 'episodes are append only'); END;
-        """)
-        meta = self.db.execute("SELECT plan_hash,schema_version FROM register_meta").fetchone()
-        if meta is None:
-            self.db.execute("INSERT INTO register_meta VALUES (?,1)", (self.plan_hash,))
-            self.db.commit()
-        elif (meta["plan_hash"], meta["schema_version"]) != (self.plan_hash, 1):
+        try:
+            self.version = self._open()
+            if self.version == 1:
+                self.db.execute("PRAGMA query_only=ON")
+        except BaseException:
             self.close()
+            raise
+
+    @contextmanager
+    def _write(self):
+        self.db.execute("BEGIN IMMEDIATE")
+        try:
+            yield
+            self.db.commit()
+        except BaseException:
+            self.db.rollback()
+            raise
+
+    def _open(self):
+        with self._write():
+            actual = {" ".join(row[0].split()) for row in self.db.execute(
+                "SELECT sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT GLOB 'sqlite_*'"
+            )}
+            schemas = {version: {" ".join(sql.split()) for sql in statements}
+                       for version, statements in ((1, LEGACY_SCHEMA), (2, LEGACY_SCHEMA + INTAKE_SCHEMA))}
+            if not actual:
+                for sql in LEGACY_SCHEMA + INTAKE_SCHEMA:
+                    self.db.execute(sql)
+                self.db.execute("INSERT INTO register_meta VALUES (?,2)", (self.plan_hash,))
+                return 2
+            for version, expected in schemas.items():
+                if actual == expected:
+                    meta = list(map(tuple, self.db.execute("SELECT plan_hash,schema_version FROM register_meta")))
+                    if meta == [(self.plan_hash, version)]:
+                        return version
             raise ValueError("Register is bound to a different plan or schema")
 
     def close(self):
         self.db.close()
 
-    def append(self, record):
-        validate_episode(record)
-        if not self.start <= timestamp(record["eligible_at"]) < self.end:
+    def _require_intake(self):
+        if self.version != 2:
+            raise ValueError("Historical register has no intake history and is read only")
+
+    def _intake_hash(self, sequence, episode_id, eligible_at):
+        return sha(canonical([self.plan_hash, sequence, episode_id, eligible_at]))
+
+    def record_eligible(self, episode_id, eligible_at):
+        self._require_intake()
+        if type(episode_id) is not str or not episode_id:
+            raise ValueError("episode_id required")
+        observed = timestamp(eligible_at)
+        if not self.start <= observed < self.end:
             raise ValueError("Episode outside predeclared period")
+        with self._write():
+            last = self.db.execute("SELECT seq,eligible_at FROM intake ORDER BY seq DESC LIMIT 1").fetchone()
+            if last and observed < timestamp(last["eligible_at"]):
+                raise ValueError("Eligible episode timestamps must be nondecreasing")
+            sequence = 1 if last is None else last["seq"] + 1
+            if sequence > self.max_episodes:
+                raise ValueError("Predeclared episode limit reached")
+            self.db.execute("INSERT INTO intake VALUES (?,?,?,?)",
+                            (sequence, episode_id, eligible_at, self._intake_hash(sequence, episode_id, eligible_at)))
+            return sequence
+
+    def append(self, record):
+        self._require_intake()
+        validate_episode(record)
         if record["reviewer_id"] not in (None, self.reviewer_id):
             raise ValueError("Episode reviewer differs from plan")
         if record["reviewer_id"] == self.operator_id:
@@ -171,40 +234,70 @@ class PilotRegister:
             if baseline is not None and (baseline["authority_ref"] != self.authority_ref or
                                          baseline["budget_ref"] != self.budget_ref):
                 raise ValueError("Baseline authority or budget differs from plan")
-        self.db.execute("BEGIN IMMEDIATE")
-        try:
-            last = self.db.execute("SELECT seq,payload,row_hash FROM episodes ORDER BY seq DESC LIMIT 1").fetchone()
-            if last and timestamp(record["eligible_at"]) < timestamp(json.loads(last["payload"])["eligible_at"]):
-                raise ValueError("Eligible episode timestamps must be nondecreasing")
+        with self._write():
+            intake = self.db.execute("SELECT * FROM intake WHERE episode_id=?", (record["episode_id"],)).fetchone()
+            if intake is None:
+                raise ValueError("Episode has no retained intake")
+            if (intake["eligible_at"] != record["eligible_at"] or intake["row_hash"] != self._intake_hash(
+                    intake["seq"], intake["episode_id"], intake["eligible_at"])):
+                raise ValueError("Episode differs from retained intake")
+            last = self.db.execute("SELECT seq,row_hash FROM episodes ORDER BY seq DESC LIMIT 1").fetchone()
             sequence = 1 if last is None else last["seq"] + 1
-            if sequence > self.max_episodes:
-                raise ValueError("Predeclared episode limit reached")
             previous = "0" * 64 if last is None else last["row_hash"]
             payload = canonical(record)
             self.db.execute("INSERT INTO episodes(seq,episode_id,payload,prev_hash,row_hash) VALUES (?,?,?,?,?)",
                             (sequence, record["episode_id"], payload, previous, sha(previous + payload)))
-            self.db.commit()
-        except Exception:
-            self.db.rollback()
-            raise
-        return sequence
+            return sequence
 
     def rows(self):
         return [dict(row) for row in self.db.execute("SELECT * FROM episodes ORDER BY seq")]
 
-    def verify_chain(self):
+    def intake_rows(self):
+        if self.version == 1:
+            return None
+        return [dict(row) for row in self.db.execute("SELECT * FROM intake ORDER BY seq")]
+
+    def _snapshot(self):
+        self.db.execute("BEGIN")
+        try:
+            return self.rows(), self.intake_rows()
+        finally:
+            self.db.rollback()
+
+    def _verify_chain(self, rows, intake):
+        registered = None
+        if intake is not None:
+            registered = {}
+            for position, row in enumerate(intake, 1):
+                if (row["seq"] != position or row["row_hash"] != self._intake_hash(
+                        position, row["episode_id"], row["eligible_at"])):
+                    return False
+                registered[row["episode_id"]] = row["eligible_at"]
         previous = "0" * 64
-        for row in self.rows():
-            if row["prev_hash"] != previous or row["row_hash"] != sha(previous + row["payload"]):
+        for position, row in enumerate(rows, 1):
+            if (row["seq"] != position or row["prev_hash"] != previous
+                    or row["row_hash"] != sha(previous + row["payload"])):
+                return False
+            record = json.loads(row["payload"])
+            if (record["episode_id"] != row["episode_id"] or
+                    (registered is not None and registered.get(row["episode_id"]) != record["eligible_at"])):
                 return False
             previous = row["row_hash"]
         return True
 
+    def verify_chain(self):
+        return self._verify_chain(*self._snapshot())
+
     def summary(self):
-        records = [json.loads(row["payload"]) for row in self.rows()]
+        rows, intake = self._snapshot()
+        chain_valid = self._verify_chain(rows, intake)
+        records = [json.loads(row["payload"]) for row in rows]
+        eligible = None if intake is None or not chain_valid else len(intake)
+        pending = None if eligible is None else eligible - len(records)
         return {"evidence_level": "synthetic_rehearsal_only", "episodes": len(records),
+                "eligible_episodes": eligible, "pending_outcomes": pending,
                 "outcomes": {name: sum(record["outcome"] == name for record in records) for name in OUTCOMES},
-                "all_baseline_slots_filled": bool(records) and all(
+                "all_baseline_slots_filled": chain_valid and pending in (None, 0) and bool(records) and all(
                     all(record["baselines"][name] is not None for name in BASELINES) for record in records),
                 "live_acceptance": None, "go_iterate_stop_decision": None,
-                "chain_valid": self.verify_chain()}
+                "chain_valid": chain_valid}

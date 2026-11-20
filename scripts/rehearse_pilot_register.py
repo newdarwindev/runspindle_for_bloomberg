@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from pilot.partner_register import BASELINES, METRICS, PilotRegister, preflight
 
-OUTPUT = ROOT / "pilot/register-demo.v1.json"
+OUTPUT = ROOT / "pilot/register-demo.v2.json"
 TEMPLATE = ROOT / "pilot/design-partner-plan.template.json"
 PROTOCOL = ROOT / "evaluation/protocol.v1.md"
 
@@ -48,18 +48,22 @@ def build_demo():
     plan = synthetic_plan()
     with tempfile.TemporaryDirectory() as temporary:
         register = PilotRegister(Path(temporary) / "episodes.sqlite", plan)
-        register.append(episode(1, "2026-11-15T12:00:00Z", "accepted_authorized_completion",
+        times = ("2026-11-15T12:00:00Z", "2026-11-15T12:05:00Z", "2026-11-15T12:10:00Z")
+        for number, timestamp in enumerate(times, 1):
+            register.record_eligible(f"synthetic-episode-{number}", timestamp)
+        register.append(episode(1, times[0], "accepted_authorized_completion",
                                 source_ref="synthetic:source-1", destination_ref="synthetic:readback-1",
                                 reviewer_id="synthetic-reviewer"))
-        register.append(episode(2, "2026-11-15T12:05:00Z", "correct_refusal",
+        register.append(episode(2, times[1], "correct_refusal",
                                 source_ref="synthetic:source-2", reviewer_id="synthetic-reviewer"))
-        register.append(episode(3, "2026-11-15T12:10:00Z", "setup_failure"))
+        register.append(episode(3, times[2], "setup_failure"))
         summary = register.summary()
+        intake = register.intake_rows()
         rows = [{"sequence": row["seq"], "row_hash": row["row_hash"],
                  **json.loads(row["payload"])} for row in register.rows()]
         register.close()
-    return {"schema_version": 1, "evidence_level": "synthetic_rehearsal_only",
-            "preflight": preflight(plan), "summary": summary, "episodes": rows}
+    return {"schema_version": 2, "evidence_level": "synthetic_rehearsal_only",
+            "preflight": preflight(plan), "summary": summary, "intake": intake, "episodes": rows}
 
 
 def main():
