@@ -115,6 +115,43 @@ class IntegrityError(RuntimeError):
     """Persisted state cannot be trusted for observation or execution."""
 
 
+def schema_objects(db):
+    return {(kind, name): " ".join(sql.split()) for kind, name, sql in db.execute(
+        "SELECT type,name,sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT GLOB 'sqlite_*'")}
+
+
+def verify_schema(db, objects):
+    expected = {key: " ".join(sql.split()) for key, sql in SCHEMA_OBJECTS.items()}
+    if objects != expected:
+        raise IntegrityError("Missing or incompatible synthetic ledger schema")
+    versions = [row[0] for row in db.execute("SELECT version FROM schema_meta")]
+    if versions != [SCHEMA_VERSION]:
+        raise IntegrityError("Unsupported schema version; migrate or restore a compatible backup")
+
+
+def run_events(db, run_id):
+    return [dict(row) for row in db.execute(
+        "SELECT seq,payload,prev_hash,event_hash FROM events WHERE run_id=? ORDER BY seq", (run_id,))]
+
+
+def verified_events(run_id, run, events):
+    previous = "0" * 64
+    payloads = []
+    for event in events:
+        if event["prev_hash"] != previous or digest(previous + event["payload"]) != event["event_hash"]:
+            raise IntegrityError("Run integrity verification failed")
+        previous = event["event_hash"]
+        payload = json.loads(event["payload"])
+        if not isinstance(payload, dict):
+            raise IntegrityError("Run integrity verification failed")
+        payloads.append(payload)
+    # Legacy events without full-snapshot binding cannot authorize new work.
+    if (not isinstance(run, dict) or run.get("id") != run_id or not payloads
+            or payloads[-1].get("snapshot_sha256") != digest(canonical(run))):
+        raise IntegrityError("Run integrity verification failed")
+    return payloads
+
+
 class Runtime:
     def __init__(self, path, clock=utc_now, id_factory=uuid.uuid4, *, create=True):
         self.path = Path(path)
@@ -139,19 +176,13 @@ class Runtime:
         # The inventory and version are checked under the same lock as first
         # initialization. A partial schema cannot acquire a fresh journal.
         with self._transaction():
-            objects = {(kind, name): " ".join(sql.split()) for kind, name, sql in self.db.execute(
-                "SELECT type,name,sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT GLOB 'sqlite_*'")}
+            objects = schema_objects(self.db)
             if not objects and create:
                 for sql in SCHEMA_OBJECTS.values():
                     self.db.execute(sql)
                 self.db.execute("INSERT INTO schema_meta VALUES (?)", (SCHEMA_VERSION,))
                 return
-            expected = {key: " ".join(sql.split()) for key, sql in SCHEMA_OBJECTS.items()}
-            if objects != expected:
-                raise IntegrityError("Missing or incompatible synthetic ledger schema")
-            versions = [row[0] for row in self.db.execute("SELECT version FROM schema_meta")]
-            if versions != [SCHEMA_VERSION]:
-                raise IntegrityError("Unsupported schema version; migrate or restore a compatible backup")
+            verify_schema(self.db, objects)
 
     @contextmanager
     def _transaction(self):
@@ -194,8 +225,7 @@ class Runtime:
             return self._snapshot(run_id)
 
     def events(self, run_id):
-        return [dict(row) for row in self.db.execute(
-            "SELECT seq,payload,prev_hash,event_hash FROM events WHERE run_id=? ORDER BY seq", (run_id,))]
+        return run_events(self.db, run_id)
 
     def verify_chain(self, run_id):
         try:
@@ -206,18 +236,11 @@ class Runtime:
             return False
 
     def _verify_snapshot(self, run_id, run):
-        previous = "0" * 64
-        last = None
-        for event in self.events(run_id):
-            if event["prev_hash"] != previous or digest(previous + event["payload"]) != event["event_hash"]:
-                return False
-            previous = event["event_hash"]
-            last = json.loads(event["payload"])
-        # Legacy events without full-snapshot binding cannot authorize new work.
-        # Never silently seal a previously unverified snapshot during recovery.
-        return (isinstance(run, dict) and run.get("id") == run_id
-                and isinstance(last, dict)
-                and last.get("snapshot_sha256") == digest(canonical(run)))
+        try:
+            verified_events(run_id, run, self.events(run_id))
+            return True
+        except IntegrityError:
+            return False
 
     def _write(self, run, action, actor):
         run["revision"] += 1

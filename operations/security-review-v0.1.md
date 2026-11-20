@@ -89,13 +89,33 @@ No live credential or account can be revoked by this repository.
 ## Monitoring and service ownership
 
 `python3 scripts/monitor_synthetic.py path/to/runs.sqlite` reports distinct
-queued operations (`begin_submission`), emitted adapter attempts (response or
-timeout), stopped runs, local journal rows, confirmed local readbacks, unknown
-effects, and interrupted runs. `external_observed_count` and
-`source_rejection_count` are `null`: no external system exists, and blocked
-source attempts are not persisted. A future pilot must add authenticated
-source-denial telemetry, external readback, alerts on unknown/mismatch, and
-timestamps for latency and repair metrics.
+queued operations (`begin_submission`), recorded adapter attempts (response or
+timeout), stopped runs, unknown effects, and interrupted runs. A timeout counts
+as an attempt without proving a journal write. The monitor opens the ledger
+read-only and checks the schema, event chains, and snapshots in one SQLite
+read transaction. Invalid ledger evidence returns exit status 2 and a fixed
+diagnostic. It produces no partial counters.
+
+- `simulated_journal_exact_count` counts rows bound to an operation in verified
+  submission or readback history with the exact account, instrument, and draft.
+  Other rows are counted as `simulated_journal_unbound_count`.
+- `recorded_readback_confirmation_count` counts distinct operations with a
+  historical confirmation event. `simulated_readback_confirmed_count` counts
+  current confirmations whose exact retained receipt still matches the local
+  journal. A missing or changed row, including a change to its commit timestamp,
+  moves the current claim to `simulated_readback_conflict_count`.
+- `simulated_readback_mismatch_count` counts operations with a recorded local
+  rejection. `external_observed_count` and `source_rejection_count` stay `null`
+  because the synthetic slice has no external destination and does not persist
+  blocked source attempts.
+
+The regression suite injects journal changes, an orphan journal row, missing
+schema protection, malformed snapshot data, and an invalid event hash in
+temporary SQLite files. A concurrent writer test checks that the monitor
+reports one consistent snapshot. The report provides evidence about the local
+ledger. A future pilot needs authenticated source-denial telemetry, external
+readback, alerts on unknown or mismatched effects, and timestamps for latency
+and repair metrics.
 
 No numeric SLO or support capacity is established. Before pilot, name an
 on-call owner and escalation contact, define alert thresholds, business
