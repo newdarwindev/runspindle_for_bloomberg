@@ -11,11 +11,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from evaluation.independent import verify_case10
+from evaluation.scenario_evidence import snapshot, verify_delta
 from pilot.adapters import ObservationRequest, SyntheticObservationAdapter
 from pilot.runtime import Runtime
 
-PROTOCOL_PATH = ROOT / "evaluation/case-10-executable.v1.json"
-REPORT_PATH = ROOT / "evaluation/replay-report.v1.json"
+PROTOCOL_PATH = ROOT / "evaluation/case-10-executable.v2.json"
+REPORT_PATH = ROOT / "evaluation/replay-report.v2.json"
 PROTOCOL = json.loads(PROTOCOL_PATH.read_text())
 FIXTURE = json.loads((ROOT / PROTOCOL["source_fixture"]).read_text())
 NOW = datetime(2026, 11, 15, 12, tzinfo=timezone.utc)
@@ -33,9 +34,16 @@ def build_report():
         path = Path(temporary) / "replay.sqlite"
         runtime = Runtime(path, clock=lambda: NOW, id_factory=lambda: next(run_ids))
 
-        def add(name, expected, actual, detail=None):
+        def begin():
+            return snapshot(path)
+
+        def add(name, before, run_id, actual, detail=()):
+            spec = PROTOCOL["scenarios"][name]
+            errors = verify_delta(path, before, run_id, spec)
+            expected = spec["outcome"]
             cases.append({"name": name, "expected": expected, "actual": actual,
-                          "passed": actual == expected, "detail": detail})
+                          "passed": actual == expected and not errors and not detail,
+                          "detail": [*detail, *errors]})
 
         def observe(fixture=FIXTURE, request=REQUEST):
             source = SyntheticObservationAdapter(fixture, clock=lambda: NOW)
@@ -52,23 +60,27 @@ def build_report():
             runtime.approve(run_id, **IDENTITY, accepted=True)
             return run_id
 
+        ledger = begin()
         baseline = approved()
         runtime.submit(baseline, **IDENTITY)
         runtime.readback(baseline, **IDENTITY)
         baseline_check = verify_case10(path, baseline, FIXTURE, PROTOCOL)
-        add("baseline_success", "synthetic_verified", baseline_check["status"], baseline_check["errors"])
+        add("baseline_success", ledger, baseline, baseline_check["status"], baseline_check["errors"])
 
-        for name, changed, expected in (
-            ("stale_data", {"observed_at": "2026-11-15T08:00:00Z"}, "stale"),
-            ("missing_data", {"current_close": None}, "missing"),
-            ("entitlement_failure", {"entitled": False}, "not_entitled"),
+        for name, changed in (
+            ("stale_data", {"observed_at": "2026-11-15T08:00:00Z"}),
+            ("missing_data", {"current_close": None}),
+            ("entitlement_failure", {"entitled": False}),
         ):
+            ledger = begin()
             run_id, result = observe({**FIXTURE, **changed})
-            add(name, expected, result.status if run_id is None else "unexpected_run")
+            add(name, ledger, run_id, result.status)
         wrong_request = ObservationRequest(FIXTURE["account_id"], FIXTURE["session_id"], "WRONG")
+        ledger = begin()
         run_id, result = observe(FIXTURE, wrong_request)
-        add("wrong_instrument", "target_mismatch", result.status if run_id is None else "unexpected_run")
+        add("wrong_instrument", ledger, run_id, result.status)
 
+        ledger = begin()
         declined, _ = observe()
         runtime.preview(declined, **IDENTITY)
         runtime.approve(declined, **IDENTITY, accepted=False)
@@ -77,8 +89,9 @@ def build_report():
             declined_actual = "submitted"
         except ValueError:
             declined_actual = runtime.status(declined)["state"]
-        add("declined_approval", "paused", declined_actual)
+        add("declined_approval", ledger, declined, declined_actual)
 
+        ledger = begin()
         before = approved()
         runtime.submit(before, **IDENTITY, mode="timeout_before_commit")
         runtime.readback(before, **IDENTITY)
@@ -87,8 +100,9 @@ def build_report():
             before_actual = "resubmitted"
         except ValueError:
             before_actual = "unknown_effect" if runtime.status(before)["effect_status"] == "unknown" else "wrong_state"
-        add("lost_response_before_commit", "unknown_effect", before_actual)
+        add("lost_response_before_commit", ledger, before, before_actual)
 
+        ledger = begin()
         after = approved()
         transient = runtime.submit(after, **IDENTITY, mode="timeout_after_commit")
         try:
@@ -99,8 +113,9 @@ def build_report():
         runtime.readback(after, **IDENTITY)
         after_check = verify_case10(path, after, FIXTURE, PROTOCOL)
         after_actual = after_check["status"] if transient["effect_status"] == "unknown" and duplicate_after else "unsafe_retry"
-        add("lost_response_after_commit", "synthetic_verified", after_actual, after_check["errors"])
+        add("lost_response_after_commit", ledger, after, after_actual, after_check["errors"])
 
+        ledger = begin()
         duplicate = approved()
         runtime.submit(duplicate, **IDENTITY)
         runtime.readback(duplicate, **IDENTITY)
@@ -108,36 +123,35 @@ def build_report():
             runtime.submit(duplicate, **IDENTITY)
             duplicate_actual = "duplicate_allowed"
         except ValueError:
-            count = runtime.db.execute("SELECT count(*) FROM journal WHERE operation_id=?",
-                                       (runtime.status(duplicate)["operation_id"],)).fetchone()[0]
-            duplicate_actual = "duplicate_rejected" if count == 1 else "wrong_count"
-        add("duplicate_delivery", "duplicate_rejected", duplicate_actual)
+            duplicate_actual = "duplicate_rejected"
+        duplicate_check = verify_case10(path, duplicate, FIXTURE, PROTOCOL)
+        add("duplicate_delivery", ledger, duplicate, duplicate_actual, duplicate_check["errors"])
 
+        ledger = begin()
         mismatch = approved()
         runtime.submit(mismatch, **IDENTITY)
         runtime.db.execute("UPDATE journal SET instrument_id='WRONG' WHERE operation_id=?",
                            (runtime.status(mismatch)["operation_id"],))
         mismatch_status = runtime.readback(mismatch, **IDENTITY)
-        add("destination_mismatch", "mismatch_paused",
+        add("destination_mismatch", ledger, mismatch,
             "mismatch_paused" if (mismatch_status["state"], mismatch_status["effect_status"]) ==
             ("paused", "mismatch") else "unsafe_state")
 
         later_fixture = {**FIXTURE, "fixture_id": "synthetic-case-10-later-mark",
                          "observed_at": "2026-11-15T11:30:00Z", "current_close": "48.70"}
+        ledger = begin()
         later, _ = observe(later_fixture)
         later_state = runtime.preview(later, **IDENTITY)
-        add("later_mark_revision", "revised_to_pause",
+        add("later_mark_revision", ledger, later,
             "revised_to_pause" if later_state["state"] == "paused" and
             runtime.status(baseline)["state"] == "recorded" and
             later_state["artifact_hash"] != runtime.status(baseline)["artifact_hash"]
             else "revision_not_isolated")
         runtime.close()
 
-    names = {case["name"] for case in cases}
-    expected_names = {"baseline_success", *PROTOCOL["negative_case_names"]}
-    if names != expected_names:
+    if [case["name"] for case in cases] != list(PROTOCOL["scenarios"]):
         raise AssertionError("Replay scenarios differ from frozen protocol")
-    return {"schema_version": 1, "evidence_level": "synthetic_replay_only",
+    return {"schema_version": 2, "evidence_level": "synthetic_replay_only",
             "protocol_sha256": hashlib.sha256(PROTOCOL_PATH.read_bytes()).hexdigest(),
             "source_fixture_sha256": hashlib.sha256((ROOT / PROTOCOL["source_fixture"]).read_bytes()).hexdigest(),
             "case_count": len(cases), "passed": sum(case["passed"] for case in cases),
@@ -146,7 +160,8 @@ def build_report():
 
 
 def main():
-    expected = json.dumps(build_report(), indent=2) + "\n"
+    report = build_report()
+    expected = json.dumps(report, indent=2) + "\n"
     if sys.argv[1:] == ["--check"]:
         if not REPORT_PATH.exists() or REPORT_PATH.read_text() != expected:
             raise SystemExit("Replay report differs; regenerate after reviewing the protocol")
@@ -154,6 +169,8 @@ def main():
     else:
         REPORT_PATH.write_text(expected)
         print(f"Wrote {REPORT_PATH}")
+    if report["passed"] != report["case_count"]:
+        raise SystemExit("One or more replay scenarios failed")
 
 
 if __name__ == "__main__":

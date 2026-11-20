@@ -1,0 +1,91 @@
+{
+  "schema_version": 2,
+  "evidence_level": "synthetic_replay_only",
+  "protocol_sha256": "d398eb16bd7c9e4f36de82883d3ebac2876738ec6d2490001d66431ad8695d78",
+  "source_fixture_sha256": "9678b8fcf85d6345e92eb102b050695784f1e79729a7e4b24ddc2664bdeea19b",
+  "case_count": 11,
+  "passed": 11,
+  "human_active_seconds": null,
+  "latency_seconds": null,
+  "full_cost": null,
+  "live_acceptance": null,
+  "cases": [
+    {
+      "name": "baseline_success",
+      "expected": "synthetic_verified",
+      "actual": "synthetic_verified",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "stale_data",
+      "expected": "stale",
+      "actual": "stale",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "missing_data",
+      "expected": "missing",
+      "actual": "missing",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "entitlement_failure",
+      "expected": "not_entitled",
+      "actual": "not_entitled",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "wrong_instrument",
+      "expected": "target_mismatch",
+      "actual": "target_mismatch",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "declined_approval",
+      "expected": "paused",
+      "actual": "paused",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "lost_response_before_commit",
+      "expected": "unknown_effect",
+      "actual": "unknown_effect",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "lost_response_after_commit",
+      "expected": "synthetic_verified",
+      "actual": "synthetic_verified",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "duplicate_delivery",
+      "expected": "duplicate_rejected",
+      "actual": "duplicate_rejected",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "destination_mismatch",
+      "expected": "mismatch_paused",
+      "actual": "mismatch_paused",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "later_mark_revision",
+      "expected": "revised_to_pause",
+      "actual": "revised_to_pause",
+      "passed": true,
+      "detail": []
+    }
+  ]
+}

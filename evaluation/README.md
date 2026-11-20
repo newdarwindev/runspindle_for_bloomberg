@@ -47,3 +47,8 @@ Do not publish a completion rate from these fixtures alone. Issue #7 still
 needs domain-reviewed calculations across the selected corpus, real matched
 baselines, holdout families, human time, latency, full cost, and uncertainty.
 Live acceptance depends on separate access and pilot gates.
+
+The [case 10 protocol v2](protocol.v2.md) independently verifies ledger and
+simulated journal evidence for every case 10 scenario, including refusals and
+unresolved outcomes. The v1 protocol and report are retained as historical
+evidence.
