@@ -1,11 +1,14 @@
 import json
 import shutil
+import subprocess
+import sys
 import tempfile
 import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from unittest.mock import patch
 
-from pilot.runtime import Runtime
+from pilot.runtime import IntegrityError, Runtime, SCHEMA_OBJECTS, verify_schema
 from pilot.monitor import summarize
 from pilot.adapters import ObservationRequest, SyntheticObservationAdapter
 
@@ -134,8 +137,105 @@ class SecurityControlTests(unittest.TestCase):
         self.assertEqual(counts["emitted_operation_count"], 2)
         self.assertEqual(counts["stopped_run_count"], 1)
         self.assertEqual(counts["simulated_readback_confirmed_count"], 1)
+        self.assertEqual(counts["recorded_readback_confirmation_count"], 1)
+        self.assertEqual(counts["simulated_readback_conflict_count"], 0)
+        self.assertEqual(counts["simulated_journal_exact_count"], 1)
+        self.assertEqual(counts["simulated_journal_unbound_count"], 0)
         self.assertEqual(counts["unknown_effect_run_count"], 1)
         self.assertIsNone(counts["external_observed_count"])
+
+    def test_monitor_reconciles_historical_confirmation_against_exact_current_journal(self):
+        run_id = self.approved()
+        self.runtime.submit(run_id, **self.identity)
+        run = self.runtime.readback(run_id, **self.identity)
+        operation = run["operation_id"]
+        for change, exact, unbound in (
+            ("UPDATE journal SET committed_at='2026-11-15T12:01:00+00:00'", 1, 0),
+            ("UPDATE journal SET account_id='synthetic:wrong'", 0, 1),
+            ("DELETE FROM journal", 0, 0),
+        ):
+            with self.subTest(change=change):
+                self.runtime.db.execute(change + " WHERE operation_id=?", (operation,))
+                before = self.runtime.db.execute("SELECT * FROM journal").fetchall()
+                counts = summarize(self.path)
+                self.assertEqual(counts["recorded_readback_confirmation_count"], 1)
+                self.assertEqual(counts["simulated_readback_confirmed_count"], 0)
+                self.assertEqual(counts["simulated_readback_conflict_count"], 1)
+                self.assertEqual(counts["simulated_journal_exact_count"], exact)
+                self.assertEqual(counts["simulated_journal_unbound_count"], unbound)
+                self.assertEqual(self.runtime.db.execute("SELECT * FROM journal").fetchall(), before)
+
+    def test_monitor_reports_local_readback_rejection_and_orphan_journal(self):
+        run_id = self.approved()
+        run = self.runtime.submit(run_id, **self.identity)
+        self.runtime.db.execute("UPDATE journal SET draft_hash=? WHERE operation_id=?",
+                                ("0" * 64, run["operation_id"]))
+        self.runtime.db.execute("INSERT INTO journal VALUES (?,?,?,?,?)",
+                                ("orphan", run["account_id"], run["instrument_id"],
+                                 run["draft_hash"], NOW.isoformat()))
+        self.assertEqual(self.runtime.readback(run_id, **self.identity)["effect_status"], "mismatch")
+        counts = summarize(self.path)
+        self.assertEqual(counts["simulated_readback_mismatch_count"], 1)
+        self.assertEqual(counts["stopped_run_count"], 1)
+        self.assertEqual(counts["simulated_readback_confirmed_count"], 0)
+        self.assertEqual(counts["simulated_journal_exact_count"], 0)
+        self.assertEqual(counts["simulated_journal_unbound_count"], 2)
+        self.assertIsNone(counts["external_observed_count"])
+
+    def test_monitor_holds_one_snapshot_during_a_concurrent_valid_write(self):
+        run_id = self.approved()
+
+        def submit_after_snapshot_starts(db, objects):
+            verify_schema(db, objects)
+            self.runtime.submit(run_id, **self.identity)
+            self.runtime.readback(run_id, **self.identity)
+
+        with patch("pilot.monitor.verify_schema", side_effect=submit_after_snapshot_starts):
+            before = summarize(self.path)
+        self.assertEqual((before["queued_operation_count"], before["simulated_journal_row_count"]), (0, 0))
+        self.assertEqual(summarize(self.path)["simulated_readback_confirmed_count"], 1)
+
+    def test_monitor_rejects_unbound_snapshot_and_cli_sanitizes_failure(self):
+        run_id = self.approved()
+        self.runtime.submit(run_id, **self.identity)
+        self.runtime.readback(run_id, **self.identity)
+        self.runtime.db.execute("UPDATE runs SET data=? WHERE id=?", ("{private-canary", run_id))
+        with self.assertRaises(IntegrityError):
+            summarize(self.path)
+        script = Path(__file__).resolve().parents[1] / "scripts/monitor_synthetic.py"
+        result = subprocess.run([sys.executable, "-B", str(script), str(self.path)],
+                                capture_output=True, text=True, timeout=10)
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(result.stdout, "")
+        self.assertEqual(result.stderr, "Synthetic ledger unavailable or inconsistent.\n")
+
+    def test_monitor_checks_required_schema_even_when_tables_are_readable(self):
+        self.approved()
+        self.runtime.db.execute("DROP TRIGGER events_no_delete")
+        with self.assertRaisesRegex(IntegrityError, "incompatible synthetic ledger schema"):
+            summarize(self.path)
+
+    def test_monitor_checks_event_chain_with_schema_intact(self):
+        run_id = self.approved()
+        db = self.runtime.db
+        db.execute("DROP TRIGGER events_no_update")
+        db.execute("UPDATE events SET event_hash=? WHERE run_id=? AND seq=1",
+                   ("f" * 64, run_id))
+        db.execute(SCHEMA_OBJECTS["trigger", "events_no_update"])
+        with self.assertRaisesRegex(IntegrityError, "Run integrity verification failed"):
+            summarize(self.path)
+
+    def test_monitor_opens_literal_database_filename_read_only(self):
+        target = Path(self.temp.name) / "monitor?fixture#1.sqlite"
+        other = Runtime(target, clock=lambda: NOW)
+        try:
+            self.assertEqual(summarize(target)["runs"], 0)
+            missing = target.with_suffix(".missing")
+            with self.assertRaises(FileNotFoundError):
+                summarize(missing)
+            self.assertFalse(missing.exists())
+        finally:
+            other.close()
 
 
 if __name__ == "__main__":

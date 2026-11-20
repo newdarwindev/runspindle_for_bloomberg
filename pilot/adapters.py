@@ -108,6 +108,20 @@ class SyntheticObservationAdapter:
         return ObservationResult(status, observation, receipt)
 
 
+def paper_readback_receipt(run, row):
+    if row is None:
+        status = "absent_inconclusive"
+    elif (row["account_id"], row["instrument_id"], row["draft_hash"]) != (
+            run["account_id"], run["instrument_id"], run["draft_hash"]):
+        status = "mismatch"
+    else:
+        status = "confirmed"
+    return {"adapter_version": ADAPTER_VERSION, "stage": "readback",
+            "route": DESTINATION_ROUTE, "operation_id": run["operation_id"],
+            "status": status,
+            "journal_ref_sha256": _hash(dict(row)) if row is not None else None}
+
+
 class SyntheticPaperDestination:
     """Simulated destination using the runtime's local journal table."""
     def __init__(self, db: sqlite3.Connection, *, clock=lambda: datetime.now(timezone.utc)):
@@ -145,14 +159,4 @@ class SyntheticPaperDestination:
     def readback(self, run: dict) -> dict:
         row = self.db.execute("SELECT * FROM journal WHERE operation_id=?",
                               (run["operation_id"],)).fetchone()
-        if row is None:
-            status = "absent_inconclusive"
-        elif (row["account_id"], row["instrument_id"], row["draft_hash"]) != (
-                run["account_id"], run["instrument_id"], run["draft_hash"]):
-            status = "mismatch"
-        else:
-            status = "confirmed"
-        return {"adapter_version": ADAPTER_VERSION, "stage": "readback",
-                "route": DESTINATION_ROUTE, "operation_id": run["operation_id"],
-                "status": status,
-                "journal_ref_sha256": _hash(dict(row)) if row is not None else None}
+        return paper_readback_receipt(run, row)
