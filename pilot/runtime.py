@@ -9,8 +9,14 @@ from datetime import date, datetime, timezone
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
-from pilot.adapters import (DESTINATION_ROUTE, SOURCE_ROUTE, ObservationRequest,
-                            SyntheticObservationAdapter, SyntheticPaperDestination)
+from pilot.adapters import (
+    ADAPTER_VERSION,
+    DESTINATION_ROUTE,
+    SOURCE_ROUTE,
+    ObservationRequest,
+    SyntheticObservationAdapter,
+    SyntheticPaperDestination,
+)
 
 SCHEMA_VERSION = 1
 RUNTIME_VERSION = "0.3.0"
@@ -22,6 +28,10 @@ OBSERVATION_FIELDS = {"instrument_id", "prior_date", "current_date", "source_tim
 SOURCE_RECEIPT_FIELDS = {"adapter_version", "status", "route", "requested_instrument",
                          "fixture_id", "fixture_sha256", "observed_at", "max_age_seconds",
                          "entitlement"}
+READBACK_FIELDS = {"adapter_version", "stage", "route", "operation_id", "status",
+                   "journal_ref_sha256"}
+READBACK_STATUSES = ("absent_inconclusive", "mismatch", "confirmed")
+UNCONFIRMED_EFFECTS = ("unknown", "unverified", "pending")
 SYNTHETIC_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$")
 
 
@@ -293,16 +303,20 @@ class Runtime:
 
     def revise(self, run_id, observation, *, actor_id, account_id, session_id):
         with self._transaction():
-            run = self.status(run_id); self._bound(run, actor_id, account_id, session_id)
-            if run["state"] not in ("setup", "preview", "paused") or run["submissions"]:
-                raise ValueError("Revision unavailable after submission or takeover")
+            run = self.status(run_id)
+            self._bound(run, actor_id, account_id, session_id)
+            if (run["state"] not in ("setup", "preview", "paused") or run["submissions"] or
+                    run["effect_status"] != "none"):
+                raise ValueError("Revision unavailable after a possible effect or takeover")
             if run.get("source_receipt"):
                 raise ValueError("Adapter-backed observation requires a new sourced run")
             validate_observation(observation, run["instrument_id"])
             run["observation"] = observation
             run["artifact_hash"] = digest(canonical(observation))
-            run["draft"] = None; run["draft_hash"] = None
-            run["approval_actor"] = None; run["operation_id"] = None
+            run["draft"] = None
+            run["draft_hash"] = None
+            run["approval_actor"] = None
+            run["operation_id"] = None
             run["state"] = "setup"
             self._write(run, "revise_observation", actor_id)
         return self.status(run_id)
@@ -365,40 +379,69 @@ class Runtime:
 
     def readback(self, run_id, *, actor_id, account_id, session_id):
         with self._transaction():
-            run = self.status(run_id); self._identity(run, actor_id, account_id, session_id)
+            run = self.status(run_id)
+            self._identity(run, actor_id, account_id, session_id)
             if run["state"] not in ("uncertain", "pending_readback", "cancelled"):
                 raise ValueError("No effect requires readback")
-            if run["state"] == "cancelled" and run["submissions"] == 0:
+            if run["state"] == "cancelled" and run["effect_status"] == "none":
                 raise ValueError("Cancelled before submission; no effect to read back")
             receipt = self.destination.readback(run)
+            if (not isinstance(receipt, dict) or set(receipt) != READBACK_FIELDS or
+                    receipt["adapter_version"] != ADAPTER_VERSION or receipt["stage"] != "readback" or
+                    receipt["route"] != run["destination"] or not run["operation_id"] or
+                    receipt["operation_id"] != run["operation_id"] or
+                    receipt["status"] not in READBACK_STATUSES):
+                raise IntegrityError("Destination readback receipt is invalid")
+            reference = receipt["journal_ref_sha256"]
+            if receipt["status"] == "absent_inconclusive":
+                if reference is not None:
+                    raise IntegrityError("Absent readback cannot carry a journal reference")
+            elif not isinstance(reference, str) or not re.fullmatch(r"[0-9a-f]{64}", reference):
+                raise IntegrityError("Destination readback lacks an exact journal reference")
             run.setdefault("destination_receipts", []).append(receipt)
             if receipt["status"] == "absent_inconclusive":
                 run["state"] = "uncertain" if run["state"] != "cancelled" else "cancelled"
                 run["effect_status"] = "unknown"
                 action = "readback_absent_inconclusive"
             elif receipt["status"] == "mismatch":
-                run["state"] = "paused"; run["effect_status"] = "mismatch"
+                if run["state"] != "cancelled":
+                    run["state"] = "paused"
+                run["effect_status"] = "mismatch"
                 action = "readback_mismatch"
             else:
                 run["effect_status"] = "confirmed"
-                if run["state"] != "cancelled": run["state"] = "recorded"
+                if run["state"] != "cancelled":
+                    run["state"] = "recorded"
                 action = "readback_confirmed"
             self._write(run, action, actor_id)
         return self.status(run_id)
 
     def control(self, run_id, action, *, actor_id, account_id, session_id):
         with self._transaction():
-            run = self.status(run_id); self._bound(run, actor_id, account_id, session_id)
-            if action == "takeover" and run["state"] in ("setup", "preview", "approved", "uncertain", "pending_readback"):
+            run = self.status(run_id)
+            self._bound(run, actor_id, account_id, session_id)
+            if action == "takeover" and run["state"] in (
+                "setup", "preview", "approved", "submitting", "uncertain", "pending_readback"
+            ):
                 run["prior_state"] = run["state"]
-                run["state"] = "takeover"; run["approval_actor"] = None
+                run["state"] = "takeover"
+                run["approval_actor"] = None
             elif action == "handback" and run["state"] == "takeover":
-                run["state"] = "uncertain" if run["effect_status"] in ("unknown", "unverified", "pending") else "setup"
-                run["draft"] = None; run["draft_hash"] = None; run["approval_actor"] = None
+                run["approval_actor"] = None
+                if run["effect_status"] in UNCONFIRMED_EFFECTS:
+                    run["state"] = "uncertain"
+                    run["effect_status"] = "unknown"
+                else:
+                    run["state"] = "setup"
+                    run["draft"] = None
+                    run["draft_hash"] = None
+                    run["operation_id"] = None
             elif action == "pause" and run["state"] in ("setup", "preview", "approved"):
-                run["state"] = "paused"; run["approval_actor"] = None
+                run["state"] = "paused"
+                run["approval_actor"] = None
             elif action == "cancel" and run["state"] not in ("cancelled", "recorded"):
-                run["state"] = "cancelled"; run["approval_actor"] = None
+                run["state"] = "cancelled"
+                run["approval_actor"] = None
             else:
                 raise ValueError("Control action unavailable from current state")
             self._write(run, action, actor_id)

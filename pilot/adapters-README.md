@@ -39,6 +39,11 @@ matching account, instrument, and draft hash before the runtime marks the
 simulated effect confirmed. An absent readback remains inconclusive; it never
 permits an automatic retry. A mismatch pauses the run.
 
+The runtime accepts a readback receipt only for the current adapter version,
+readback stage, configured route and original operation. Confirmation and
+mismatch require a journal reference hash. An inconclusive absence has no
+journal reference. An unrecognized receipt leaves the prior ledger state intact.
+
 The journal and run ledger share one SQLite database. Their distinct methods
 exercise the contract but are **not independent external systems**. A
 confirmed synthetic journal row is not Bloomberg acceptance, a NOTE write,
