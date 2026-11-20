@@ -1,0 +1,246 @@
+{
+  "schema_version": 1,
+  "evidence_level": "manually_transcribed_synthetic_expectations",
+  "cases": [
+    {
+      "id": 1,
+      "decision": "stage_draft",
+      "reasons": [],
+      "metrics": {"quote_usd": "70800", "supplier_cost_usd": "69900", "gross_margin_usd": "900"}
+    },
+    {
+      "id": 2,
+      "decision": "stage_draft",
+      "reasons": [],
+      "metrics": {"incremental_margin_usd": "450"}
+    },
+    {
+      "id": 3,
+      "decision": "stage_draft",
+      "reasons": [],
+      "metrics": {"below_required_notches": "1", "fee_to_verify_usd": "1200"}
+    },
+    {
+      "id": 4,
+      "decision": "stage_draft",
+      "reasons": [],
+      "metrics": {"reserve_clean_points": "92.12", "bid_excess_points": ".88"}
+    },
+    {
+      "id": 5,
+      "decision": "stage_draft",
+      "reasons": [],
+      "metrics": {"expected_payout_usd": "88000", "shortfall_usd": "800", "contingent_fee_usd": "160"}
+    },
+    {
+      "id": 6,
+      "decision": "stage_draft",
+      "reasons": [],
+      "metrics": {"rate_error_bps": "26.161", "excess_interest_usd": "10464.40"}
+    },
+    {
+      "id": 7,
+      "decision": "stage_draft",
+      "reasons": [],
+      "metrics": {"excess_return_pct": "-.20", "fee_eligible_return_pct": "0", "reversal_if_no_fee_usd": "2000"}
+    },
+    {
+      "id": 8,
+      "decision": "stage_draft",
+      "reasons": [],
+      "metrics": {"claim_usd": "4800"}
+    },
+    {
+      "id": 9,
+      "decision": "stage_paper",
+      "reasons": [],
+      "metrics": {"eps_surprise_usd": ".08", "guidance_surprise_usd": ".26", "pnl_usd_share": "2"}
+    },
+    {
+      "id": 10,
+      "decision": "pass",
+      "reasons": [],
+      "metrics": {"raw_return_pct": "-2.2", "cash_adjusted_pct": ".2"}
+    },
+    {
+      "id": 11,
+      "decision": "stage_paper",
+      "reasons": [],
+      "metrics": {"premium_gap_bps": "55"}
+    },
+    {
+      "id": 12,
+      "decision": "stage_paper",
+      "reasons": [],
+      "metrics": {"surprise_jobs_k": "-20", "revision_jobs_k": "-15", "clean_gain_per_100": ".1875"}
+    },
+    {
+      "id": 13,
+      "decision": "pause",
+      "reasons": ["missing:preset_threshold"],
+      "metrics": {"entry_spread_usd_bbl": "1.30", "short_spread_pnl_usd_bbl": ".40"}
+    },
+    {
+      "id": 14,
+      "decision": "review_bond_b",
+      "reasons": [],
+      "metrics": {"a_vs_floor_bps": "-60", "b_vs_floor_bps": "12"}
+    },
+    {
+      "id": 15,
+      "decision": "pause",
+      "reasons": ["missing:thesis_clears_break_even"],
+      "metrics": {"lower_break_even": "94", "upper_break_even": "106", "pnl_high": "2", "pnl_mid": "-3"}
+    },
+    {
+      "id": 16,
+      "decision": "pause",
+      "reasons": ["missing:thesis_usd_per_eur"],
+      "metrics": {"forward_premium_usd_per_eur": ".0050", "pnl_usd": "700"}
+    },
+    {
+      "id": 17,
+      "decision": "stage_paper",
+      "reasons": [],
+      "metrics": {"consideration_per_target_share": "50", "hedge_acquirer_shares": "50", "modeled_gross_pnl_usd": "120"}
+    },
+    {
+      "id": 18,
+      "decision": "pass",
+      "reasons": [],
+      "metrics": {"net_share_change": "1000000", "net_share_change_pct": "1"}
+    },
+    {
+      "id": 19,
+      "decision": "stage_paper",
+      "reasons": [],
+      "metrics": {"expected_due_usd_m": "150", "clean_pnl_per_100": "2"}
+    },
+    {
+      "id": 20,
+      "decision": "stage_paper",
+      "reasons": [],
+      "metrics": {"long_dv01_usd_bps": "80", "short_dv01_usd_bps": "80", "first_order_pnl_usd": "480"}
+    },
+    {
+      "id": 21,
+      "decision": "pass",
+      "reasons": [],
+      "metrics": {"returned_usd": "99948.51", "pnl_usd": "-51.49"}
+    },
+    {
+      "id": 22,
+      "decision": "pause",
+      "reasons": ["missing:downside_thesis_clears"],
+      "metrics": {"skew_pct_points": "8", "lower_break_even": "98", "expiry_pnl": "3", "loss_at_or_above_long_strike": "-2"}
+    },
+    {
+      "id": 23,
+      "decision": "pause",
+      "reasons": ["missing:min_difference"],
+      "metrics": {"monthly_avg_pct": "4.375", "implied_settlement": "95.625", "paper_pnl_points": ".050"}
+    },
+    {
+      "id": 24,
+      "decision": "stage_paper",
+      "reasons": [],
+      "metrics": {"two_leg_pnl_usd": "300"}
+    },
+    {
+      "id": 25,
+      "decision": "stage_paper",
+      "reasons": [],
+      "metrics": {"entry_spread_usd_input_bbl": "21.80", "pnl_usd_input_bbl": "2"}
+    },
+    {
+      "id": 26,
+      "decision": "stage_paper",
+      "reasons": [],
+      "metrics": {"headline_change": "0", "matched_mean_revision": ".10", "pnl_usd_share": "1.50"}
+    },
+    {
+      "id": 27,
+      "decision": "pause",
+      "reasons": ["missing:quote_hurdle_usd"],
+      "metrics": {"parity_usd": "55", "premium_usd": "2.20", "pnl_usd_adr": "1.70"}
+    },
+    {
+      "id": 28,
+      "decision": "pass",
+      "reasons": [],
+      "metrics": {"days_before": "5", "days_after": "10", "short_share_change": "0"}
+    },
+    {
+      "id": 29,
+      "decision": "pass",
+      "reasons": [],
+      "metrics": {"benchmark_return_pct": "-1", "leveraged_return_pct": "-4", "idealized_pnl_usd": "-400"}
+    },
+    {
+      "id": 30,
+      "decision": "pass",
+      "reasons": [],
+      "metrics": {"accepted_price": "9.80", "residual_break_even": "9.00", "modeled_value_per_share": "9.1625", "pnl_usd": "-37.50"}
+    },
+    {
+      "id": 31,
+      "decision": "pause",
+      "reasons": ["missing:price_confirmed"],
+      "metrics": {"net_position_change": "-20000", "pnl_usd_lb": ".05"}
+    },
+    {
+      "id": 32,
+      "decision": "stage_paper",
+      "reasons": [],
+      "metrics": {"entry_breakeven_pct": "2.55", "widening_bps": "15", "real_move_bps": "5", "exit_spread_move_bps": "12"}
+    },
+    {
+      "id": 33,
+      "decision": "pause",
+      "reasons": ["missing:tail_floor_bps"],
+      "metrics": {"auction_tail_bps": "3", "clean_short_pnl_per_100": ".21875"}
+    },
+    {
+      "id": 34,
+      "decision": "pause",
+      "reasons": ["missing:cost_hurdle"],
+      "metrics": {"modeled_cost_per_share": "14.60", "current_discount_usd": ".40", "modeled_gain_usd": ".30"}
+    },
+    {
+      "id": 35,
+      "decision": "pass",
+      "reasons": [],
+      "metrics": {"asset_change_usd": "50000000", "nav_effect_usd": "50000000", "unexplained_asset_change_usd": "0"}
+    },
+    {
+      "id": 36,
+      "decision": "pass",
+      "reasons": [],
+      "metrics": {"display_change_usd_mmbtu": ".20", "old_contract_change_usd_mmbtu": ".01", "new_contract_change_usd_mmbtu": ".01"}
+    },
+    {
+      "id": 37,
+      "decision": "stage_paper",
+      "reasons": [],
+      "metrics": {"cost_per_100": "98.8625", "investment_yield_pct": "4.615", "cost_usd": "9886.25", "redemption_gain_usd": "113.75"}
+    },
+    {
+      "id": 38,
+      "decision": "pass",
+      "reasons": [],
+      "metrics": {"ask_excess_points": ".70"}
+    },
+    {
+      "id": 39,
+      "decision": "pause",
+      "reasons": ["missing:trigger_cleared"],
+      "metrics": {"relative_volume": "2", "pnl_usd_share": ".80"}
+    },
+    {
+      "id": 40,
+      "decision": "pass",
+      "reasons": [],
+      "metrics": {"futures_minus_spot_points": "3.50", "short_pnl_usd_contract": "-800"}
+    }
+  ]
+}

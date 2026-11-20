@@ -1,0 +1,571 @@
+{
+  "schema_version": 1,
+  "evidence_level": "synthetic_finance_only",
+  "holdout_families": [
+    "fx",
+    "rates",
+    "options"
+  ],
+  "cases": [
+    {
+      "id": 1,
+      "family": "procurement",
+      "inputs": {"tonnes": "100", "settlement_usd_t": "690", "contract_premium_usd_t": "18", "landed_cost_usd_t": "699"},
+      "checks": {"exact_delivery_month": true, "official_settlement": true, "holds_cover_bid_deadline": true, "matched_quantities": true},
+      "calculations": {
+        "quote_usd": ["mul", "$tonnes", ["add", "$settlement_usd_t", "$contract_premium_usd_t"]],
+        "supplier_cost_usd": ["mul", "$tonnes", "$landed_cost_usd_t"],
+        "gross_margin_usd": ["sub", "$quote_usd", "$supplier_cost_usd"]
+      },
+      "when": ["gt", "$gross_margin_usd", "0"],
+      "if_true": "stage_draft",
+      "if_false": "pass",
+      "assumptions": "The $18 per tonne premium is the stated quote less settlement; both holds are valid in this synthetic branch."
+    },
+    {
+      "id": 2,
+      "family": "procurement",
+      "inputs": {"rush_charge_usd": "650", "incremental_freight_usd": "200"},
+      "checks": {"part_matches": true, "lot_manufacturer_verified": true, "independent_approved_manufacturer": true},
+      "calculations": {
+        "incremental_margin_usd": ["sub", "$rush_charge_usd", "$incremental_freight_usd"]
+      },
+      "when": ["gt", "$incremental_margin_usd", "0"],
+      "if_true": "stage_draft",
+      "if_false": "pass",
+      "assumptions": "The reviewed lot is from another approved manufacturer in this synthetic branch."
+    },
+    {
+      "id": 3,
+      "family": "credit",
+      "inputs": {"issuer_rating_rank": "3", "minimum_rating_rank": "2", "fee_invoiced_usd": "1200"},
+      "checks": {"exact_issuing_legal_entity": true, "rating_scale_matches": true, "replacement_offer_matched": true},
+      "calculations": {
+        "below_required_notches": ["sub", "$issuer_rating_rank", "$minimum_rating_rank"],
+        "fee_to_verify_usd": "$fee_invoiced_usd"
+      },
+      "when": ["gt", "$below_required_notches", "0"],
+      "if_true": "stage_draft",
+      "if_false": "pass",
+      "assumptions": "On the local two-entry scale A− ranks 2 and BBB+ ranks 3. The fee is a stated invoice amount, not a recovery calculation. Outreach and release require separate approval and beneficiary acceptance."
+    },
+    {
+      "id": 4,
+      "family": "credit",
+      "inputs": {"evaluated_bid": "94.00", "reserve_fraction": ".98", "score": "7", "score_floor": "6", "firm_net_clean_bid": "93.00"},
+      "checks": {"exact_bond": true, "score_from_valuation": true, "valid_firm_bid": true, "accrued_interest_treatment_matches": true},
+      "calculations": {
+        "reserve_clean_points": ["mul", "$evaluated_bid", "$reserve_fraction"],
+        "bid_excess_points": ["sub", "$firm_net_clean_bid", "$reserve_clean_points"]
+      },
+      "when": ["and", ["ge", "$score", "$score_floor"], ["ge", "$bid_excess_points", "0"]],
+      "if_true": "stage_draft",
+      "if_false": "pause"
+    },
+    {
+      "id": 5,
+      "family": "fx",
+      "inputs": {"statement_eur": "80000", "contract_usd_per_eur": "1.1000", "statement_usd": "87200", "success_fee_fraction": ".20"},
+      "checks": {"contract_fix_time_matches": true, "one_settlement_date": true, "deductions_reconciled": true, "quote_direction_matches": true},
+      "calculations": {
+        "expected_payout_usd": ["mul", "$statement_eur", "$contract_usd_per_eur"],
+        "shortfall_usd": ["sub", "$expected_payout_usd", "$statement_usd"],
+        "contingent_fee_usd": ["mul", "$shortfall_usd", "$success_fee_fraction"]
+      },
+      "when": ["gt", "$shortfall_usd", "0"],
+      "if_true": "stage_draft",
+      "if_false": "pass"
+    },
+    {
+      "id": 6,
+      "family": "rates",
+      "inputs": {"principal_usd": "16000000", "charged_rate_pct": "4.88322", "fallback_rate_pct": "4.62161", "days": "90", "basis": "360"},
+      "checks": {"signed_terms_verified": true, "tenor_matches": true, "original_fixing_date": true, "no_fallback_amendment": true, "day_count_matches": true},
+      "calculations": {
+        "rate_error_bps": ["mul", ["sub", "$charged_rate_pct", "$fallback_rate_pct"], "100"],
+        "excess_interest_usd": ["round", ["mul", ["mul", "$principal_usd", ["div", "$rate_error_bps", "10000"]], ["div", "$days", "$basis"]], "2"]
+      },
+      "when": ["gt", "$excess_interest_usd", "0"],
+      "if_true": "stage_draft",
+      "if_false": "pass",
+      "assumptions": "The note margin is common to both rates and cancels in the difference."
+    },
+    {
+      "id": 7,
+      "family": "funds",
+      "inputs": {"account_return_pct": "1.80", "signed_benchmark_pct": "2.00", "invoiced_fee_usd": "2000"},
+      "checks": {"signed_benchmark_matches": true, "hedging_and_return_basis_match": true, "side_letters_checked": true},
+      "calculations": {
+        "excess_return_pct": ["sub", "$account_return_pct", "$signed_benchmark_pct"],
+        "fee_eligible_return_pct": ["max", "$excess_return_pct", "0"],
+        "reversal_if_no_fee_usd": ["mul", "$invoiced_fee_usd", "1"]
+      },
+      "when": ["eq", "$fee_eligible_return_pct", "0"],
+      "if_true": "stage_draft",
+      "if_false": "pause",
+      "assumptions": "The full billed fee is reversible on the zero-fee branch only."
+    },
+    {
+      "id": 8,
+      "family": "corporate_actions",
+      "inputs": {"dividend_usd_share": ".80", "eligible_shares": "6000"},
+      "checks": {"exact_security_and_event": true, "entitled_position": true, "both_ledgers_present": true, "no_matching_credit": true},
+      "calculations": {
+        "claim_usd": ["mul", "$dividend_usd_share", "$eligible_shares"]
+      },
+      "when": ["gt", "$claim_usd", "0"],
+      "if_true": "stage_draft",
+      "if_false": "pass"
+    },
+    {
+      "id": 9,
+      "family": "earnings",
+      "inputs": {"adjusted_eps": "1.08", "consensus_eps": "1.00", "guidance_midpoint": "4.76", "guidance_consensus": "4.50", "entry": "52", "exit": "54", "entry_rule_met": "1"},
+      "checks": {"pre_release_consensus": true, "fiscal_periods_match": true, "accounting_definitions_match": true},
+      "calculations": {
+        "eps_surprise_usd": ["sub", "$adjusted_eps", "$consensus_eps"],
+        "guidance_surprise_usd": ["sub", "$guidance_midpoint", "$guidance_consensus"],
+        "pnl_usd_share": ["sub", "$exit", "$entry"]
+      },
+      "when": ["and", ["gt", "$eps_surprise_usd", "0"], ["gt", "$guidance_surprise_usd", "0"], ["eq", "$entry_rule_met", "1"]],
+      "if_true": "stage_paper",
+      "if_false": "pass",
+      "assumptions": "Both positive surprises meet the illustrative paper rule; no real strategy threshold is asserted."
+    },
+    {
+      "id": 10,
+      "family": "corporate_actions",
+      "inputs": {"prior_close": "50.00", "current_close": "48.90", "cash_dividend": "1.20"},
+      "checks": {"same_security_and_dates": true, "no_other_corporate_action": true},
+      "calculations": {
+        "raw_return_pct": ["mul", ["div", ["sub", "$current_close", "$prior_close"], "$prior_close"], "100"],
+        "cash_adjusted_pct": ["mul", ["div", ["sub", ["add", "$current_close", "$cash_dividend"], "$prior_close"], "$prior_close"], "100"]
+      },
+      "when": ["and", ["lt", "$raw_return_pct", "0"], ["gt", "$cash_adjusted_pct", "0"]],
+      "if_true": "pass",
+      "if_false": "pause"
+    },
+    {
+      "id": 11,
+      "family": "funds",
+      "inputs": {"fund_a_premium_pct": ".60", "fund_b_premium_pct": ".05"},
+      "checks": {"same_benchmark": true, "same_currency_hedge": true, "comparable_valuation_times": true, "both_funds_eligible": true},
+      "calculations": {
+        "premium_gap_bps": ["mul", ["sub", "$fund_a_premium_pct", "$fund_b_premium_pct"], "100"]
+      },
+      "when": ["gt", "$premium_gap_bps", "0"],
+      "if_true": "stage_paper",
+      "if_false": "pause",
+      "assumptions": "Positive A minus B selects B; subsequent total returns are not supplied."
+    },
+    {
+      "id": 12,
+      "family": "rates",
+      "inputs": {"actual_jobs_k": "170", "consensus_jobs_k": "190", "prior_jobs_k": "180", "revised_jobs_k": "165", "entry_ticks": "12", "exit_ticks": "18", "yield_moved_lower": "1"},
+      "checks": {"same_release_basis": true, "same_treasury": true, "same_integral_price_points": true},
+      "calculations": {
+        "surprise_jobs_k": ["sub", "$actual_jobs_k", "$consensus_jobs_k"],
+        "revision_jobs_k": ["sub", "$revised_jobs_k", "$prior_jobs_k"],
+        "clean_gain_per_100": ["div", ["sub", "$exit_ticks", "$entry_ticks"], "32"]
+      },
+      "when": ["and", ["lt", "$surprise_jobs_k", "0"], ["lt", "$revision_jobs_k", "0"], ["eq", "$yield_moved_lower", "1"]],
+      "if_true": "stage_paper",
+      "if_false": "pause",
+      "assumptions": "The illustrative branch supplies a lower two-year yield as a qualitative confirmation and both price handles are 99."
+    },
+    {
+      "id": 13,
+      "family": "futures",
+      "inputs": {"near_usd_bbl": "71.20", "far_usd_bbl": "69.90", "exit_spread_usd_bbl": ".90", "preset_threshold": null},
+      "checks": {"same_day_settlements": true, "exact_original_contracts": true, "sufficient_time_to_expiry": true},
+      "calculations": {
+        "entry_spread_usd_bbl": ["sub", "$near_usd_bbl", "$far_usd_bbl"],
+        "short_spread_pnl_usd_bbl": ["sub", "$entry_spread_usd_bbl", "$exit_spread_usd_bbl"]
+      },
+      "when": ["gt", "$entry_spread_usd_bbl", "$preset_threshold"],
+      "if_true": "stage_paper",
+      "if_false": "pass",
+      "assumptions": "The source supplies the scenario P&L but no entry threshold."
+    },
+    {
+      "id": 14,
+      "family": "credit",
+      "inputs": {"bond_a_ytm_pct": "5.80", "bond_a_ytw_pct": "4.40", "bond_b_ytw_pct": "5.12", "floor_pct": "5.00"},
+      "checks": {"current_price": true, "full_call_schedule": true, "credit_scope_confirmed": true},
+      "calculations": {
+        "a_vs_floor_bps": ["mul", ["sub", "$bond_a_ytw_pct", "$floor_pct"], "100"],
+        "b_vs_floor_bps": ["mul", ["sub", "$bond_b_ytw_pct", "$floor_pct"], "100"]
+      },
+      "when": ["and", ["lt", "$a_vs_floor_bps", "0"], ["ge", "$b_vs_floor_bps", "0"]],
+      "if_true": "review_bond_b",
+      "if_false": "pause"
+    },
+    {
+      "id": 15,
+      "family": "options",
+      "inputs": {"strike": "100", "premium": "6", "settlement_high": "108", "settlement_mid": "103", "thesis_clears_break_even": null},
+      "checks": {"same_strike_and_expiry": true, "earnings_before_expiry": true, "current_quotes": true},
+      "calculations": {
+        "lower_break_even": ["sub", "$strike", "$premium"],
+        "upper_break_even": ["add", "$strike", "$premium"],
+        "pnl_high": ["sub", ["add", ["max", ["sub", "$settlement_high", "$strike"], "0"], ["max", ["sub", "$strike", "$settlement_high"], "0"]], "$premium"],
+        "pnl_mid": ["sub", ["add", ["max", ["sub", "$settlement_mid", "$strike"], "0"], ["max", ["sub", "$strike", "$settlement_mid"], "0"]], "$premium"]
+      },
+      "when": ["eq", "$thesis_clears_break_even", "1"],
+      "if_true": "stage_paper",
+      "if_false": "pass"
+    },
+    {
+      "id": 16,
+      "family": "fx",
+      "inputs": {"spot_usd_per_eur": "1.1000", "forward_usd_per_eur": "1.1050", "settlement_usd_per_eur": "1.1120", "notional_eur": "100000", "thesis_usd_per_eur": null, "extra_hurdle_usd_per_eur": null},
+      "checks": {"intended_value_date": true, "quote_direction_matches": true, "settlement_value_date_matches": true},
+      "calculations": {
+        "forward_premium_usd_per_eur": ["sub", "$forward_usd_per_eur", "$spot_usd_per_eur"],
+        "pnl_usd": ["mul", ["sub", "$settlement_usd_per_eur", "$forward_usd_per_eur"], "$notional_eur"]
+      },
+      "when": ["gt", "$thesis_usd_per_eur", ["add", "$forward_usd_per_eur", "$extra_hurdle_usd_per_eur"]],
+      "if_true": "stage_paper",
+      "if_false": "pass"
+    },
+    {
+      "id": 17,
+      "family": "corporate_actions",
+      "inputs": {"cash_per_target_share": "20", "exchange_ratio": ".5", "acquirer_price": "60", "target_price": "48.80", "target_shares": "100"},
+      "checks": {"fixed_exchange_ratio": true, "deal_terms_unchanged": true, "close_as_signed_scenario": true},
+      "calculations": {
+        "consideration_per_target_share": ["add", "$cash_per_target_share", ["mul", "$exchange_ratio", "$acquirer_price"]],
+        "hedge_acquirer_shares": ["mul", "$target_shares", "$exchange_ratio"],
+        "modeled_gross_pnl_usd": ["mul", ["sub", "$consideration_per_target_share", "$target_price"], "$target_shares"]
+      },
+      "when": ["gt", "$modeled_gross_pnl_usd", "0"],
+      "if_true": "stage_paper",
+      "if_false": "pass",
+      "assumptions": "The close-as-signed payoff excludes borrow and execution costs."
+    },
+    {
+      "id": 18,
+      "family": "corporate_actions",
+      "inputs": {"repurchase_usd": "200000000", "prior_shares": "100000000", "current_shares": "101000000"},
+      "checks": {"same_reporting_basis": true, "no_share_split": true, "same_entity": true},
+      "calculations": {
+        "net_share_change": ["sub", "$current_shares", "$prior_shares"],
+        "net_share_change_pct": ["mul", ["div", ["sub", "$current_shares", "$prior_shares"], "$prior_shares"], "100"]
+      },
+      "when": ["ge", "$net_share_change", "0"],
+      "if_true": "pass",
+      "if_false": "stage_paper"
+    },
+    {
+      "id": 19,
+      "family": "credit",
+      "inputs": {"prior_due_usd_m": "650", "retired_usd_m": "500", "updated_due_usd_m": "150", "entry": "94", "exit": "96"},
+      "checks": {"repayment_completed": true, "seniority_unchanged": true, "same_bond_marks": true},
+      "calculations": {
+        "expected_due_usd_m": ["sub", "$prior_due_usd_m", "$retired_usd_m"],
+        "clean_pnl_per_100": ["sub", "$exit", "$entry"]
+      },
+      "when": ["eq", "$expected_due_usd_m", "$updated_due_usd_m"],
+      "if_true": "stage_paper",
+      "if_false": "pause"
+    },
+    {
+      "id": 20,
+      "family": "rates",
+      "inputs": {"two_year_dv01_per_unit": "20", "ten_year_dv01_per_unit": "80", "dv01_unit_face": "100000", "long_face": "400000", "short_face": "100000", "two_year_move_bps": "2", "ten_year_move_bps": "8"},
+      "checks": {"same_pricing_date": true, "same_dv01_basis": true, "exact_legs": true},
+      "calculations": {
+        "long_dv01_usd_bps": ["mul", "$two_year_dv01_per_unit", ["div", "$long_face", "$dv01_unit_face"]],
+        "short_dv01_usd_bps": ["mul", "$ten_year_dv01_per_unit", ["div", "$short_face", "$dv01_unit_face"]],
+        "first_order_pnl_usd": ["sub", ["mul", "$short_dv01_usd_bps", "$ten_year_move_bps"], ["mul", "$long_dv01_usd_bps", "$two_year_move_bps"]]
+      },
+      "when": ["eq", "$long_dv01_usd_bps", "$short_dv01_usd_bps"],
+      "if_true": "stage_paper",
+      "if_false": "pause"
+    },
+    {
+      "id": 21,
+      "family": "fx",
+      "inputs": {"start_usd": "100000", "eurusd_ask": "1.1002", "eurjpy_bid": "165.00", "usdjpy_ask": "150.05"},
+      "checks": {"compatible_quote_times": true, "compatible_quote_sources": true, "correct_quote_sides": true},
+      "calculations": {
+        "returned_usd": ["round", ["div", ["mul", ["div", "$start_usd", "$eurusd_ask"], "$eurjpy_bid"], "$usdjpy_ask"], "2"],
+        "pnl_usd": ["sub", "$returned_usd", "$start_usd"]
+      },
+      "when": ["lt", "$pnl_usd", "0"],
+      "if_true": "pass",
+      "if_false": "review",
+      "assumptions": "Only the final USD value is rounded to cents."
+    },
+    {
+      "id": 22,
+      "family": "options",
+      "inputs": {"long_put_strike": "100", "short_put_strike": "95", "debit": "2", "settlement": "94", "iv_put_pct": "31", "iv_atm_pct": "23", "downside_thesis_clears": null},
+      "checks": {"same_maturity": true, "current_leg_quotes": true, "same_underlying": true},
+      "calculations": {
+        "skew_pct_points": ["sub", "$iv_put_pct", "$iv_atm_pct"],
+        "lower_break_even": ["sub", "$long_put_strike", "$debit"],
+        "expiry_pnl": ["sub", ["sub", ["max", ["sub", "$long_put_strike", "$settlement"], "0"], ["max", ["sub", "$short_put_strike", "$settlement"], "0"]], "$debit"],
+        "loss_at_or_above_long_strike": ["sub", "0", "$debit"]
+      },
+      "when": ["eq", "$downside_thesis_clears", "1"],
+      "if_true": "stage_paper",
+      "if_false": "pass"
+    },
+    {
+      "id": 23,
+      "family": "rates",
+      "inputs": {"early_days": "15", "late_days": "15", "early_rate_pct": "4.50", "late_rate_pct": "4.25", "contract_mark": "95.575", "min_difference": null},
+      "checks": {"exact_futures_month": true, "effective_date_known": true, "monthly_day_weights_match": true},
+      "calculations": {
+        "monthly_avg_pct": ["div", ["add", ["mul", "$early_days", "$early_rate_pct"], ["mul", "$late_days", "$late_rate_pct"]], ["add", "$early_days", "$late_days"]],
+        "implied_settlement": ["sub", "100", "$monthly_avg_pct"],
+        "paper_pnl_points": ["sub", "$implied_settlement", "$contract_mark"]
+      },
+      "when": ["gt", "$paper_pnl_points", "$min_difference"],
+      "if_true": "stage_paper",
+      "if_false": "pass"
+    },
+    {
+      "id": 24,
+      "family": "equity_signals",
+      "inputs": {"prior_underperformance_pct": "4", "long_usd": "10000", "short_usd": "10000", "stock_a_move_pct": "2", "stock_b_move_pct": "-1"},
+      "checks": {"same_sector_peer": true, "event_calendar_clear": true, "thesis_intact": true, "matched_exit": true},
+      "calculations": {
+        "two_leg_pnl_usd": ["div", ["sub", ["mul", "$long_usd", "$stock_a_move_pct"], ["mul", "$short_usd", "$stock_b_move_pct"]], "100"]
+      },
+      "when": true,
+      "if_true": "stage_paper",
+      "if_false": "pass",
+      "assumptions": "The paper branch assumes no intervening earnings or verified company-specific shock."
+    },
+    {
+      "id": 25,
+      "family": "futures",
+      "inputs": {"crude_usd_bbl": "72", "gasoline_usd_gal": "2.15", "diesel_usd_gal": "2.40", "gallons_per_bbl": "42", "exit_spread": "23.80"},
+      "checks": {"same_delivery_month": true, "same_settlement_date": true, "same_contracts": true, "unit_conversion_checked": true},
+      "calculations": {
+        "entry_spread_usd_input_bbl": ["sub", ["div", ["mul", ["add", ["mul", "2", "$gasoline_usd_gal"], "$diesel_usd_gal"], "$gallons_per_bbl"], "3"], "$crude_usd_bbl"],
+        "pnl_usd_input_bbl": ["sub", "$exit_spread", "$entry_spread_usd_input_bbl"]
+      },
+      "when": true,
+      "if_true": "stage_paper",
+      "if_false": "pass"
+    },
+    {
+      "id": 26,
+      "family": "earnings",
+      "inputs": {"headline_before": "2.00", "headline_after": "2.00", "matched_analysts": "8", "increase_each": ".10", "entry": "41.00", "exit": "42.50"},
+      "checks": {"same_eps_basis": true, "same_fiscal_period": true, "contributor_ids_matched": true},
+      "calculations": {
+        "headline_change": ["sub", "$headline_after", "$headline_before"],
+        "matched_mean_revision": ["div", ["mul", "$matched_analysts", "$increase_each"], "$matched_analysts"],
+        "pnl_usd_share": ["sub", "$exit", "$entry"]
+      },
+      "when": ["gt", "$matched_mean_revision", "0"],
+      "if_true": "stage_paper",
+      "if_false": "pass",
+      "assumptions": "The source describes identical revisions for all eight continuing analysts; it does not provide individual estimate levels."
+    },
+    {
+      "id": 27,
+      "family": "fx",
+      "inputs": {"shares_per_adr": "2", "ordinary_eur_share": "25", "usd_per_eur": "1.10", "adr_entry_usd": "57.20", "adr_exit_usd": "55.50", "exit_parity_usd": "55.00", "quote_hurdle_usd": null},
+      "checks": {"receipt_ratio_unchanged": true, "overlapping_marks": true, "exact_currency_quote": true},
+      "calculations": {
+        "parity_usd": ["mul", ["mul", "$shares_per_adr", "$ordinary_eur_share"], "$usd_per_eur"],
+        "premium_usd": ["sub", "$adr_entry_usd", "$parity_usd"],
+        "pnl_usd_adr": ["add", ["sub", "$adr_entry_usd", "$adr_exit_usd"], ["sub", "$exit_parity_usd", "$parity_usd"]]
+      },
+      "when": ["gt", "$premium_usd", "$quote_hurdle_usd"],
+      "if_true": "stage_paper",
+      "if_false": "pass"
+    },
+    {
+      "id": 28,
+      "family": "equity_signals",
+      "inputs": {"short_before": "10000000", "short_after": "10000000", "adv_before": "2000000", "adv_after": "1000000"},
+      "checks": {"same_volume_lookback": true, "split_adjustments_match": true, "same_reported_short_series": true},
+      "calculations": {
+        "days_before": ["div", "$short_before", "$adv_before"],
+        "days_after": ["div", "$short_after", "$adv_after"],
+        "short_share_change": ["sub", "$short_after", "$short_before"]
+      },
+      "when": ["eq", "$short_share_change", "0"],
+      "if_true": "pass",
+      "if_false": "review"
+    },
+    {
+      "id": 29,
+      "family": "funds",
+      "inputs": {"benchmark_day_one": ".10", "benchmark_day_two": "-.10", "leverage": "2", "notional_usd": "10000"},
+      "checks": {"daily_reset_confirmed": true, "consecutive_benchmark_marks": true},
+      "calculations": {
+        "benchmark_return_pct": ["mul", ["sub", ["mul", ["add", "1", "$benchmark_day_one"], ["add", "1", "$benchmark_day_two"]], "1"], "100"],
+        "leveraged_return_pct": ["mul", ["sub", ["mul", ["add", "1", ["mul", "$leverage", "$benchmark_day_one"]], ["add", "1", ["mul", "$leverage", "$benchmark_day_two"]]], "1"], "100"],
+        "idealized_pnl_usd": ["mul", ["div", "$leveraged_return_pct", "100"], "$notional_usd"]
+      },
+      "when": ["lt", "$leveraged_return_pct", ["mul", "$leverage", "$benchmark_return_pct"]],
+      "if_true": "pass",
+      "if_false": "review",
+      "assumptions": "The modeled position uses idealized daily leverage before fees and tracking error."
+    },
+    {
+      "id": 30,
+      "family": "funds",
+      "inputs": {"entry": "9.20", "nav": "10.00", "offer_nav_fraction": ".98", "accepted_fraction": ".25", "residual_mark": "8.95", "shares": "1000"},
+      "checks": {"offer_terms_current": true, "matched_nav_proration_scenario": true},
+      "calculations": {
+        "accepted_price": ["mul", "$nav", "$offer_nav_fraction"],
+        "residual_break_even": ["div", ["sub", "$entry", ["mul", "$accepted_fraction", "$accepted_price"]], ["sub", "1", "$accepted_fraction"]],
+        "modeled_value_per_share": ["add", ["mul", "$accepted_fraction", "$accepted_price"], ["mul", ["sub", "1", "$accepted_fraction"], "$residual_mark"]],
+        "pnl_usd": ["mul", ["sub", "$modeled_value_per_share", "$entry"], "$shares"]
+      },
+      "when": ["lt", "$residual_mark", "$residual_break_even"],
+      "if_true": "pass",
+      "if_false": "review"
+    },
+    {
+      "id": 31,
+      "family": "futures",
+      "inputs": {"long_before": "150000", "long_after": "130000", "short_before": "60000", "short_after": "60000", "entry": "4.20", "exit": "4.15", "price_confirmed": null},
+      "checks": {"same_cot_category": true, "futures_only": true, "publication_before_entry": true, "exact_contract": true},
+      "calculations": {
+        "net_position_change": ["sub", ["sub", "$long_after", "$short_after"], ["sub", "$long_before", "$short_before"]],
+        "pnl_usd_lb": ["sub", "$entry", "$exit"]
+      },
+      "when": ["and", ["lt", "$net_position_change", "0"], ["eq", "$price_confirmed", "1"]],
+      "if_true": "stage_paper",
+      "if_false": "pass"
+    },
+    {
+      "id": 32,
+      "family": "rates",
+      "inputs": {"nominal_before_pct": "4.10", "nominal_after_pct": "4.30", "real_before_pct": "1.70", "real_after_pct": "1.75", "exit_breakeven_pct": "2.67"},
+      "checks": {"matched_tenors": true, "matched_observation_times": true},
+      "calculations": {
+        "entry_breakeven_pct": ["sub", "$nominal_after_pct", "$real_after_pct"],
+        "widening_bps": ["mul", ["sub", "$entry_breakeven_pct", ["sub", "$nominal_before_pct", "$real_before_pct"]], "100"],
+        "real_move_bps": ["mul", ["sub", "$real_after_pct", "$real_before_pct"], "100"],
+        "exit_spread_move_bps": ["mul", ["sub", "$exit_breakeven_pct", "$entry_breakeven_pct"], "100"]
+      },
+      "when": ["gt", "$widening_bps", "0"],
+      "if_true": "stage_paper",
+      "if_false": "pass",
+      "assumptions": "The selected branch is the widening-breakeven thesis. Spread movement alone is not bond P&L."
+    },
+    {
+      "id": 33,
+      "family": "rates",
+      "inputs": {"high_yield_pct": "4.34", "issue_yield_pct": "4.31", "entry_ticks": "9", "cover_ticks": "2", "tail_floor_bps": null},
+      "checks": {"exact_cusip": true, "fresh_when_issued_quote": true, "same_integral_price_points": true, "post_auction_entry": true},
+      "calculations": {
+        "auction_tail_bps": ["mul", ["sub", "$high_yield_pct", "$issue_yield_pct"], "100"],
+        "clean_short_pnl_per_100": ["div", ["sub", "$entry_ticks", "$cover_ticks"], "32"]
+      },
+      "when": ["ge", "$auction_tail_bps", "$tail_floor_bps"],
+      "if_true": "stage_paper",
+      "if_false": "pass",
+      "assumptions": "Both clean-price handles are 99; the source supplies no auction-tail threshold."
+    },
+    {
+      "id": 34,
+      "family": "corporate_actions",
+      "inputs": {"rights_per_new_share": "4", "price_per_right": ".65", "subscription_price": "12", "current_share_price": "15", "exit_share_price": "14.90", "cost_hurdle": null},
+      "checks": {"rights_transferable": true, "settlement_within_deadline": true, "subscription_ratio_matches": true},
+      "calculations": {
+        "modeled_cost_per_share": ["add", ["mul", "$rights_per_new_share", "$price_per_right"], "$subscription_price"],
+        "current_discount_usd": ["sub", "$current_share_price", "$modeled_cost_per_share"],
+        "modeled_gain_usd": ["sub", "$exit_share_price", "$modeled_cost_per_share"]
+      },
+      "when": ["gt", "$current_discount_usd", "$cost_hurdle"],
+      "if_true": "stage_paper",
+      "if_false": "pass"
+    },
+    {
+      "id": 35,
+      "family": "funds",
+      "inputs": {"assets_before_usd": "1000000000", "assets_after_usd": "1050000000", "nav_before": "20", "nav_after": "21", "shares": "50000000", "reported_net_flow_usd": "0"},
+      "checks": {"share_counts_unchanged": true, "same_nav_share_dates": true, "no_split": true, "flow_receipt_present": true},
+      "calculations": {
+        "asset_change_usd": ["sub", "$assets_after_usd", "$assets_before_usd"],
+        "nav_effect_usd": ["mul", ["sub", "$nav_after", "$nav_before"], "$shares"],
+        "unexplained_asset_change_usd": ["sub", "$asset_change_usd", "$nav_effect_usd"]
+      },
+      "when": ["and", ["eq", "$unexplained_asset_change_usd", "0"], ["eq", "$reported_net_flow_usd", "0"]],
+      "if_true": "pass",
+      "if_false": "review",
+      "assumptions": "The source's stated no-net-flow branch is instantiated with an explicit synthetic zero-flow observation."
+    },
+    {
+      "id": 36,
+      "family": "futures",
+      "inputs": {"generic_before": "2.70", "generic_after": "2.90", "old_before": "2.70", "old_after": "2.71", "new_before": "2.89", "new_after": "2.90"},
+      "checks": {"fixed_contracts_identified": true, "matched_roll_settings": true, "same_settlement_dates": true},
+      "calculations": {
+        "display_change_usd_mmbtu": ["sub", "$generic_after", "$generic_before"],
+        "old_contract_change_usd_mmbtu": ["sub", "$old_after", "$old_before"],
+        "new_contract_change_usd_mmbtu": ["sub", "$new_after", "$new_before"]
+      },
+      "when": ["gt", "$display_change_usd_mmbtu", ["max", "$old_contract_change_usd_mmbtu", "$new_contract_change_usd_mmbtu"]],
+      "if_true": "pass",
+      "if_false": "review",
+      "assumptions": "Pass applies to the displayed $0.20 breakout signal. The fixed contracts are not tested against an unspecified independent trigger."
+    },
+    {
+      "id": 37,
+      "family": "rates",
+      "inputs": {"face_usd": "10000", "maturity_days": "91", "discount_pct": "4.50", "discount_year_days": "360", "investment_year_days": "365", "hurdle_pct": "4.60"},
+      "checks": {"exact_bill": true, "settlement_date_verified": true, "yield_conventions_match": true},
+      "calculations": {
+        "cost_per_100": ["sub", "100", ["mul", "$discount_pct", ["div", "$maturity_days", "$discount_year_days"]]],
+        "investment_yield_pct": ["round", ["mul", ["div", ["sub", "100", "$cost_per_100"], "$cost_per_100"], ["div", ["mul", "$investment_year_days", "100"], "$maturity_days"]], "3"],
+        "cost_usd": ["round", ["mul", "$face_usd", ["div", "$cost_per_100", "100"]], "2"],
+        "redemption_gain_usd": ["sub", "$face_usd", "$cost_usd"]
+      },
+      "when": ["gt", ["mul", ["sub", "100", "$cost_per_100"], ["mul", "$investment_year_days", "100"]], ["mul", "$hurdle_pct", ["mul", "$cost_per_100", "$maturity_days"]]],
+      "if_true": "stage_paper",
+      "if_false": "pass",
+      "assumptions": "Simple investment yield uses ACT/365 in this scenario; the bank discount quotation uses a 360-day basis."
+    },
+    {
+      "id": 38,
+      "family": "credit",
+      "inputs": {"last_price": "94.00", "last_face": "25000", "large_trade_price": "95.80", "quote_ask": "95.95", "quote_face": "500000", "desired_face": "500000", "limit": "95.25"},
+      "checks": {"exact_cusip": true, "fresh_trade_and_quote": true, "quote_size_known": true},
+      "calculations": {
+        "ask_excess_points": ["sub", "$quote_ask", "$limit"]
+      },
+      "when": ["and", ["eq", "$quote_face", "$desired_face"], ["gt", "$ask_excess_points", "0"]],
+      "if_true": "pass",
+      "if_false": "review"
+    },
+    {
+      "id": 39,
+      "family": "equity_signals",
+      "inputs": {"observed_shares": "1200000", "comparable_avg_shares": "600000", "entry": "50.20", "exit": "51.00", "trigger_cleared": null},
+      "checks": {"same_session_elapsed_time": true, "regular_hours_only": true, "comparable_session_length": true},
+      "calculations": {
+        "relative_volume": ["div", "$observed_shares", "$comparable_avg_shares"],
+        "pnl_usd_share": ["sub", "$exit", "$entry"]
+      },
+      "when": ["eq", "$trigger_cleared", "1"],
+      "if_true": "stage_paper",
+      "if_false": "pass"
+    },
+    {
+      "id": 40,
+      "family": "futures",
+      "inputs": {"entry_futures_points": "19.50", "spot_index_points": "16.00", "opening_settlement_points": "20.30", "usd_per_point": "1000"},
+      "checks": {"exact_full_size_contract": true, "expiry_matches": true, "opening_quotation_confirmed": true},
+      "calculations": {
+        "futures_minus_spot_points": ["sub", "$entry_futures_points", "$spot_index_points"],
+        "short_pnl_usd_contract": ["mul", ["sub", "$entry_futures_points", "$opening_settlement_points"], "$usd_per_point"]
+      },
+      "when": true,
+      "if_true": "pass",
+      "if_false": "pass",
+      "assumptions": "Pass rejects the spot-as-settlement premise. P&L is the separate scenario of a hypothetical short held to official settlement."
+    }
+  ]
+}

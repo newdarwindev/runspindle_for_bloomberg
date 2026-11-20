@@ -1,0 +1,1780 @@
+{
+  "schema_version": 1,
+  "evidence_level": "synthetic_finance_only",
+  "source_csv_sha256": "7f746cf3a0a8fb90c8d680704f13ee3a7ef87a3bd7604a97c5917abbd2a37a57",
+  "fixture_sha256": "116cb4ae732a7e24cd71358aa5c4d25cf0ab38a494f8707c03e5431c50128aaf",
+  "expected_sha256": "356aae53522ca3c33d363ce5760a45d5f53d26b7e00d2a70332e1691e13383f4",
+  "protocol_sha256": "739454ab2090726ce9fc3d6c829e9252c3288a74ca0889540dac64d50f1be2c5",
+  "software": {
+    "model": null,
+    "runner_sha256": "4f2bf831cb54a3b5ad8a7d6561423b93689527989f10008b956f4ce3a9c4abbc",
+    "evaluator_sha256": "65d194b0218dc3f0367c130034e66e7210f634cf4280bafd40bab32e0438a336",
+    "verifier_sha256": "07a8f32f8e490b328826168cc3e006123a360c2966017306ad9a0069d967bc36"
+  },
+  "holdout_families": [
+    "fx",
+    "rates",
+    "options"
+  ],
+  "baseline_count": 40,
+  "adverse_count": 128,
+  "domain_review": "not_run",
+  "measurement": {
+    "accepted_authorized_completion": null,
+    "correct_refusal": null,
+    "unknown_effect": null,
+    "produced_only": null,
+    "human_active_seconds": null,
+    "latency_seconds": null,
+    "quality": null,
+    "full_cost": null,
+    "matched_baselines": null,
+    "uncertainty": null
+  },
+  "failures": [],
+  "cases": [
+    {
+      "id": 1,
+      "name": "Hearthspan Fuel",
+      "family": "procurement",
+      "split": "development",
+      "source_urls": [
+        "https://assets.bbhub.io/professional/sites/10/Proprietary-Commodity-Data-on-Bloomberg-Brochure.pdf",
+        "https://assets.bbhub.io/professional/sites/10/Bloomberg-US-Treasury-Future-Tracker-Indices-Methodology.pdf",
+        "https://www.ice.com/products/34361119/Low-Sulphur-Gasoil-Futures/specs"
+      ],
+      "baseline": {
+        "decision": "stage_draft",
+        "reasons": [],
+        "metrics": {
+          "quote_usd": "70800",
+          "supplier_cost_usd": "69900",
+          "gross_margin_usd": "900"
+        }
+      },
+      "adverse": {
+        "exact_delivery_month": {
+          "decision": "pause",
+          "reasons": [
+            "exact_delivery_month"
+          ],
+          "metrics": {}
+        },
+        "official_settlement": {
+          "decision": "pause",
+          "reasons": [
+            "official_settlement"
+          ],
+          "metrics": {}
+        },
+        "holds_cover_bid_deadline": {
+          "decision": "pause",
+          "reasons": [
+            "holds_cover_bid_deadline"
+          ],
+          "metrics": {}
+        },
+        "matched_quantities": {
+          "decision": "pause",
+          "reasons": [
+            "matched_quantities"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 2,
+      "name": "Switchyard Components",
+      "family": "procurement",
+      "split": "development",
+      "source_urls": [
+        "https://professional.content.cirrus.bloomberg.com/professional2023/insights/markets/trade-war-and-tariffs-anatomy-of-winners-and-losers/"
+      ],
+      "baseline": {
+        "decision": "stage_draft",
+        "reasons": [],
+        "metrics": {
+          "incremental_margin_usd": "450"
+        }
+      },
+      "adverse": {
+        "part_matches": {
+          "decision": "pause",
+          "reasons": [
+            "part_matches"
+          ],
+          "metrics": {}
+        },
+        "lot_manufacturer_verified": {
+          "decision": "pause",
+          "reasons": [
+            "lot_manufacturer_verified"
+          ],
+          "metrics": {}
+        },
+        "independent_approved_manufacturer": {
+          "decision": "pause",
+          "reasons": [
+            "independent_approved_manufacturer"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 3,
+      "name": "Tern Guarantee Brokers",
+      "family": "credit",
+      "split": "development",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/10/Ratings-Fact-Sheet.pdf"
+      ],
+      "baseline": {
+        "decision": "stage_draft",
+        "reasons": [],
+        "metrics": {
+          "below_required_notches": "1",
+          "fee_to_verify_usd": "1200"
+        }
+      },
+      "adverse": {
+        "exact_issuing_legal_entity": {
+          "decision": "pause",
+          "reasons": [
+            "exact_issuing_legal_entity"
+          ],
+          "metrics": {}
+        },
+        "rating_scale_matches": {
+          "decision": "pause",
+          "reasons": [
+            "rating_scale_matches"
+          ],
+          "metrics": {}
+        },
+        "replacement_offer_matched": {
+          "decision": "pause",
+          "reasons": [
+            "replacement_offer_matched"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 4,
+      "name": "Clearsill Bond Desk",
+      "family": "credit",
+      "split": "development",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/10/750114_Navigate-every-market.pdf",
+        "https://professional.bloomberg.com/products/data/enterprise-catalog/pricing/evaluated-pricing/"
+      ],
+      "baseline": {
+        "decision": "stage_draft",
+        "reasons": [],
+        "metrics": {
+          "reserve_clean_points": "92.1200",
+          "bid_excess_points": "0.8800"
+        }
+      },
+      "adverse": {
+        "exact_bond": {
+          "decision": "pause",
+          "reasons": [
+            "exact_bond"
+          ],
+          "metrics": {}
+        },
+        "score_from_valuation": {
+          "decision": "pause",
+          "reasons": [
+            "score_from_valuation"
+          ],
+          "metrics": {}
+        },
+        "valid_firm_bid": {
+          "decision": "pause",
+          "reasons": [
+            "valid_firm_bid"
+          ],
+          "metrics": {}
+        },
+        "accrued_interest_treatment_matches": {
+          "decision": "pause",
+          "reasons": [
+            "accrued_interest_treatment_matches"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 5,
+      "name": "Lantern Film Receipts",
+      "family": "fx",
+      "split": "holdout",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/27/BFIX-Methodology.pdf"
+      ],
+      "baseline": {
+        "decision": "stage_draft",
+        "reasons": [],
+        "metrics": {
+          "expected_payout_usd": "88000.0000",
+          "shortfall_usd": "800.0000",
+          "contingent_fee_usd": "160.000000"
+        }
+      },
+      "adverse": {
+        "contract_fix_time_matches": {
+          "decision": "pause",
+          "reasons": [
+            "contract_fix_time_matches"
+          ],
+          "metrics": {}
+        },
+        "one_settlement_date": {
+          "decision": "pause",
+          "reasons": [
+            "one_settlement_date"
+          ],
+          "metrics": {}
+        },
+        "deductions_reconciled": {
+          "decision": "pause",
+          "reasons": [
+            "deductions_reconciled"
+          ],
+          "metrics": {}
+        },
+        "quote_direction_matches": {
+          "decision": "pause",
+          "reasons": [
+            "quote_direction_matches"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 6,
+      "name": "Juniper Reset Audit",
+      "family": "rates",
+      "split": "holdout",
+      "source_urls": [
+        "https://assets.bbhub.io/professional/sites/27/Fallbacks_FAQ_V14.1_Apr-2025.pdf",
+        "https://data.bloomberglp.com/professional/sites/10/IBOR-Fallbacks-Technical-Note.pdf"
+      ],
+      "baseline": {
+        "decision": "stage_draft",
+        "reasons": [],
+        "metrics": {
+          "rate_error_bps": "26.16100",
+          "excess_interest_usd": "10464.40"
+        }
+      },
+      "adverse": {
+        "signed_terms_verified": {
+          "decision": "pause",
+          "reasons": [
+            "signed_terms_verified"
+          ],
+          "metrics": {}
+        },
+        "tenor_matches": {
+          "decision": "pause",
+          "reasons": [
+            "tenor_matches"
+          ],
+          "metrics": {}
+        },
+        "original_fixing_date": {
+          "decision": "pause",
+          "reasons": [
+            "original_fixing_date"
+          ],
+          "metrics": {}
+        },
+        "no_fallback_amendment": {
+          "decision": "pause",
+          "reasons": [
+            "no_fallback_amendment"
+          ],
+          "metrics": {}
+        },
+        "day_count_matches": {
+          "decision": "pause",
+          "reasons": [
+            "day_count_matches"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 7,
+      "name": "Sable Mandate Audit",
+      "family": "funds",
+      "split": "development",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/10/Bloomberg-Index-Publications-Fixed-Income-Index-Methodology.pdf",
+        "https://assets.bbhub.io/professional/sites/10/775677865_Chinese_Bonds_SFCT_DIG.pdf",
+        "https://www.ssga.com/library-content/products/fund-docs/etfs/emea/supplements/fund-sup-02-spdr-bloomberg-global-aggregate-bond-en.pdf"
+      ],
+      "baseline": {
+        "decision": "stage_draft",
+        "reasons": [],
+        "metrics": {
+          "excess_return_pct": "-0.20",
+          "fee_eligible_return_pct": "0",
+          "reversal_if_no_fee_usd": "2000"
+        }
+      },
+      "adverse": {
+        "signed_benchmark_matches": {
+          "decision": "pause",
+          "reasons": [
+            "signed_benchmark_matches"
+          ],
+          "metrics": {}
+        },
+        "hedging_and_return_basis_match": {
+          "decision": "pause",
+          "reasons": [
+            "hedging_and_return_basis_match"
+          ],
+          "metrics": {}
+        },
+        "side_letters_checked": {
+          "decision": "pause",
+          "reasons": [
+            "side_letters_checked"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 8,
+      "name": "Quay Distribution Claims",
+      "family": "corporate_actions",
+      "split": "development",
+      "source_urls": [
+        "https://assets.bbhub.io/professional/sites/10/Bloomberg-Global-Equity-Indices-Non-Market-Cap-Corporate-Action-Methodology_May2023.pdf",
+        "https://data.bloomberglp.com/professional/sites/10/Dividends-Forecast-Fact-Sheet.pdf"
+      ],
+      "baseline": {
+        "decision": "stage_draft",
+        "reasons": [],
+        "metrics": {
+          "claim_usd": "4800.00"
+        }
+      },
+      "adverse": {
+        "exact_security_and_event": {
+          "decision": "pause",
+          "reasons": [
+            "exact_security_and_event"
+          ],
+          "metrics": {}
+        },
+        "entitled_position": {
+          "decision": "pause",
+          "reasons": [
+            "entitled_position"
+          ],
+          "metrics": {}
+        },
+        "both_ledgers_present": {
+          "decision": "pause",
+          "reasons": [
+            "both_ledgers_present"
+          ],
+          "metrics": {}
+        },
+        "no_matching_credit": {
+          "decision": "pause",
+          "reasons": [
+            "no_matching_credit"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 9,
+      "name": "Earnings beat with raised guidance",
+      "family": "earnings",
+      "split": "development",
+      "source_urls": [
+        "https://assets.bbhub.io/professional/sites/10/RMB-Equity-Solutions.pdf",
+        "https://data.bloomberglp.com/professional/sites/10/Getting-Started-Guide-for-Students-English.pdf"
+      ],
+      "baseline": {
+        "decision": "stage_paper",
+        "reasons": [],
+        "metrics": {
+          "eps_surprise_usd": "0.08",
+          "guidance_surprise_usd": "0.26",
+          "pnl_usd_share": "2"
+        }
+      },
+      "adverse": {
+        "pre_release_consensus": {
+          "decision": "pause",
+          "reasons": [
+            "pre_release_consensus"
+          ],
+          "metrics": {}
+        },
+        "fiscal_periods_match": {
+          "decision": "pause",
+          "reasons": [
+            "fiscal_periods_match"
+          ],
+          "metrics": {}
+        },
+        "accounting_definitions_match": {
+          "decision": "pause",
+          "reasons": [
+            "accounting_definitions_match"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 10,
+      "name": "Dividend-driven false breakdown",
+      "family": "corporate_actions",
+      "split": "development",
+      "source_urls": [
+        "https://guides.library.upenn.edu/bloomberg/equities",
+        "https://www.sec.gov/divisions/corpfin/cf-noaction/14a-8/2016/jamesjensen022316-14a8.pdf"
+      ],
+      "baseline": {
+        "decision": "pass",
+        "reasons": [],
+        "metrics": {
+          "raw_return_pct": "-2.200",
+          "cash_adjusted_pct": "0.200"
+        }
+      },
+      "adverse": {
+        "same_security_and_dates": {
+          "decision": "pause",
+          "reasons": [
+            "same_security_and_dates"
+          ],
+          "metrics": {}
+        },
+        "no_other_corporate_action": {
+          "decision": "pause",
+          "reasons": [
+            "no_other_corporate_action"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 11,
+      "name": "Buy the cheaper ETF exposure",
+      "family": "funds",
+      "split": "development",
+      "source_urls": [
+        "https://professional.content.cirrus.bloomberg.com/professional2023/insights/webinar/etf-go-enhancements/",
+        "https://www.blackrock.com/gls-download/literature/investor-guide/etf-guide-for-institutional-investors.pdf"
+      ],
+      "baseline": {
+        "decision": "stage_paper",
+        "reasons": [],
+        "metrics": {
+          "premium_gap_bps": "55.00"
+        }
+      },
+      "adverse": {
+        "same_benchmark": {
+          "decision": "pause",
+          "reasons": [
+            "same_benchmark"
+          ],
+          "metrics": {}
+        },
+        "same_currency_hedge": {
+          "decision": "pause",
+          "reasons": [
+            "same_currency_hedge"
+          ],
+          "metrics": {}
+        },
+        "comparable_valuation_times": {
+          "decision": "pause",
+          "reasons": [
+            "comparable_valuation_times"
+          ],
+          "metrics": {}
+        },
+        "both_funds_eligible": {
+          "decision": "pause",
+          "reasons": [
+            "both_funds_eligible"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 12,
+      "name": "Payroll surprise with a revision check",
+      "family": "rates",
+      "split": "holdout",
+      "source_urls": [
+        "https://data.bloomberglp.com/bat/sites/3/2016/09/LUISS-Bloomberg-Primer.pdf",
+        "https://data.bloomberglp.com/professional/sites/10/LUISS_2018Primer.pdf",
+        "https://www.cmegroup.com/education/courses/introduction-to-treasuries/calculating-us-treasury-pricing"
+      ],
+      "baseline": {
+        "decision": "stage_paper",
+        "reasons": [],
+        "metrics": {
+          "surprise_jobs_k": "-20",
+          "revision_jobs_k": "-15",
+          "clean_gain_per_100": "0.1875"
+        }
+      },
+      "adverse": {
+        "same_release_basis": {
+          "decision": "pause",
+          "reasons": [
+            "same_release_basis"
+          ],
+          "metrics": {}
+        },
+        "same_treasury": {
+          "decision": "pause",
+          "reasons": [
+            "same_treasury"
+          ],
+          "metrics": {}
+        },
+        "same_integral_price_points": {
+          "decision": "pause",
+          "reasons": [
+            "same_integral_price_points"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 13,
+      "name": "Crude-oil calendar spread",
+      "family": "futures",
+      "split": "development",
+      "source_urls": [
+        "https://assets.bbhub.io/professional/sites/10/Proprietary-Commodity-Data-on-Bloomberg-Brochure.pdf",
+        "https://www.ice.com/publicdocs/data/ICE_on_Bloomberg.pdf"
+      ],
+      "baseline": {
+        "decision": "pause",
+        "reasons": [
+          "missing:preset_threshold"
+        ],
+        "metrics": {
+          "entry_spread_usd_bbl": "1.30",
+          "short_spread_pnl_usd_bbl": "0.40"
+        }
+      },
+      "adverse": {
+        "same_day_settlements": {
+          "decision": "pause",
+          "reasons": [
+            "same_day_settlements"
+          ],
+          "metrics": {}
+        },
+        "exact_original_contracts": {
+          "decision": "pause",
+          "reasons": [
+            "exact_original_contracts"
+          ],
+          "metrics": {}
+        },
+        "sufficient_time_to_expiry": {
+          "decision": "pause",
+          "reasons": [
+            "sufficient_time_to_expiry"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 14,
+      "name": "Callable-bond yield filter",
+      "family": "credit",
+      "split": "development",
+      "source_urls": [
+        "https://professional.content.cirrus.bloomberg.com/professional2023/insights/markets/bloomberg-pro-tips-analyze-and-price-bonds-on-the-go-with-yas-mobile/",
+        "https://www.ohioapt.org/wp-content/uploads/2012/02/9A-Yacobozzi-Principles-of-Investment-Accounting.pdf"
+      ],
+      "baseline": {
+        "decision": "review_bond_b",
+        "reasons": [],
+        "metrics": {
+          "a_vs_floor_bps": "-60.00",
+          "b_vs_floor_bps": "12.00"
+        }
+      },
+      "adverse": {
+        "current_price": {
+          "decision": "pause",
+          "reasons": [
+            "current_price"
+          ],
+          "metrics": {}
+        },
+        "full_call_schedule": {
+          "decision": "pause",
+          "reasons": [
+            "full_call_schedule"
+          ],
+          "metrics": {}
+        },
+        "credit_scope_confirmed": {
+          "decision": "pause",
+          "reasons": [
+            "credit_scope_confirmed"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 15,
+      "name": "Earnings straddle break-even",
+      "family": "options",
+      "split": "holdout",
+      "source_urls": [
+        "https://assets.bbhub.io/professional/sites/10/Bloomberg_SeeAllSides.pdf",
+        "https://data.bloomberglp.com/professional/sites/4/BLPAPI-Core-User-Guide.pdf",
+        "https://www.optionseducation.org/strategies/all-strategies/long-straddle"
+      ],
+      "baseline": {
+        "decision": "pause",
+        "reasons": [
+          "missing:thesis_clears_break_even"
+        ],
+        "metrics": {
+          "lower_break_even": "94",
+          "upper_break_even": "106",
+          "pnl_high": "2",
+          "pnl_mid": "-3"
+        }
+      },
+      "adverse": {
+        "same_strike_and_expiry": {
+          "decision": "pause",
+          "reasons": [
+            "same_strike_and_expiry"
+          ],
+          "metrics": {}
+        },
+        "earnings_before_expiry": {
+          "decision": "pause",
+          "reasons": [
+            "earnings_before_expiry"
+          ],
+          "metrics": {}
+        },
+        "current_quotes": {
+          "decision": "pause",
+          "reasons": [
+            "current_quotes"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 16,
+      "name": "FX forward hurdle",
+      "family": "fx",
+      "split": "holdout",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/4/BLPAPI-Core-User-Guide.pdf",
+        "https://www.iimb.ac.in/ccmrm/file/Getting-Started-Bloomberg-Basics.pdf"
+      ],
+      "baseline": {
+        "decision": "pause",
+        "reasons": [
+          "missing:thesis_usd_per_eur"
+        ],
+        "metrics": {
+          "forward_premium_usd_per_eur": "0.0050",
+          "pnl_usd": "700.0000"
+        }
+      },
+      "adverse": {
+        "intended_value_date": {
+          "decision": "pause",
+          "reasons": [
+            "intended_value_date"
+          ],
+          "metrics": {}
+        },
+        "quote_direction_matches": {
+          "decision": "pause",
+          "reasons": [
+            "quote_direction_matches"
+          ],
+          "metrics": {}
+        },
+        "settlement_value_date_matches": {
+          "decision": "pause",
+          "reasons": [
+            "settlement_value_date_matches"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 17,
+      "name": "Cash-and-stock merger spread",
+      "family": "corporate_actions",
+      "split": "development",
+      "source_urls": [
+        "https://assets.bbhub.io/professional/sites/10/RMB-Equity-Solutions.pdf",
+        "https://data.bloomberglp.com/professional/sites/10/Getting-Started-Guide-for-Students-English.pdf"
+      ],
+      "baseline": {
+        "decision": "stage_paper",
+        "reasons": [],
+        "metrics": {
+          "consideration_per_target_share": "50.0",
+          "hedge_acquirer_shares": "50.0",
+          "modeled_gross_pnl_usd": "120.00"
+        }
+      },
+      "adverse": {
+        "fixed_exchange_ratio": {
+          "decision": "pause",
+          "reasons": [
+            "fixed_exchange_ratio"
+          ],
+          "metrics": {}
+        },
+        "deal_terms_unchanged": {
+          "decision": "pause",
+          "reasons": [
+            "deal_terms_unchanged"
+          ],
+          "metrics": {}
+        },
+        "close_as_signed_scenario": {
+          "decision": "pause",
+          "reasons": [
+            "close_as_signed_scenario"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 18,
+      "name": "Buyback that actually shrinks share count",
+      "family": "corporate_actions",
+      "split": "development",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/10/189913_CDS_REF_Fundamentals_SFCT_DIG.pdf",
+        "https://data.bloomberglp.com/professional/sites/10/2018_Bloomberg_GEI_Overview.pdf"
+      ],
+      "baseline": {
+        "decision": "pass",
+        "reasons": [],
+        "metrics": {
+          "net_share_change": "1000000",
+          "net_share_change_pct": "1.00"
+        }
+      },
+      "adverse": {
+        "same_reporting_basis": {
+          "decision": "pause",
+          "reasons": [
+            "same_reporting_basis"
+          ],
+          "metrics": {}
+        },
+        "no_share_split": {
+          "decision": "pause",
+          "reasons": [
+            "no_share_split"
+          ],
+          "metrics": {}
+        },
+        "same_entity": {
+          "decision": "pause",
+          "reasons": [
+            "same_entity"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 19,
+      "name": "Bond repricing after a completed refinance",
+      "family": "credit",
+      "split": "development",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/10/750114_Navigate-every-market.pdf",
+        "https://data.bloomberglp.com/professional/sites/10/Getting-Started-Guide-for-Students-English.pdf"
+      ],
+      "baseline": {
+        "decision": "stage_paper",
+        "reasons": [],
+        "metrics": {
+          "expected_due_usd_m": "150",
+          "clean_pnl_per_100": "2"
+        }
+      },
+      "adverse": {
+        "repayment_completed": {
+          "decision": "pause",
+          "reasons": [
+            "repayment_completed"
+          ],
+          "metrics": {}
+        },
+        "seniority_unchanged": {
+          "decision": "pause",
+          "reasons": [
+            "seniority_unchanged"
+          ],
+          "metrics": {}
+        },
+        "same_bond_marks": {
+          "decision": "pause",
+          "reasons": [
+            "same_bond_marks"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 20,
+      "name": "DV01-matched Treasury steepener",
+      "family": "rates",
+      "split": "holdout",
+      "source_urls": [
+        "https://professional.content.cirrus.bloomberg.com/professional2023/insights/markets/bloomberg-pro-tips-analyze-and-price-bonds-on-the-go-with-yas-mobile/",
+        "https://knowledgehub.ghamfin.org/wp-content/uploads/2024/06/Fixed-Income-Analysis.pdf"
+      ],
+      "baseline": {
+        "decision": "stage_paper",
+        "reasons": [],
+        "metrics": {
+          "long_dv01_usd_bps": "80",
+          "short_dv01_usd_bps": "80",
+          "first_order_pnl_usd": "480"
+        }
+      },
+      "adverse": {
+        "same_pricing_date": {
+          "decision": "pause",
+          "reasons": [
+            "same_pricing_date"
+          ],
+          "metrics": {}
+        },
+        "same_dv01_basis": {
+          "decision": "pause",
+          "reasons": [
+            "same_dv01_basis"
+          ],
+          "metrics": {}
+        },
+        "exact_legs": {
+          "decision": "pause",
+          "reasons": [
+            "exact_legs"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 21,
+      "name": "Three-leg FX quote check",
+      "family": "fx",
+      "split": "holdout",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/10/2017/03/BLPAPI-Core-User-Guide.pdf"
+      ],
+      "baseline": {
+        "decision": "pass",
+        "reasons": [],
+        "metrics": {
+          "returned_usd": "99948.51",
+          "pnl_usd": "-51.49"
+        }
+      },
+      "adverse": {
+        "compatible_quote_times": {
+          "decision": "pause",
+          "reasons": [
+            "compatible_quote_times"
+          ],
+          "metrics": {}
+        },
+        "compatible_quote_sources": {
+          "decision": "pause",
+          "reasons": [
+            "compatible_quote_sources"
+          ],
+          "metrics": {}
+        },
+        "correct_quote_sides": {
+          "decision": "pause",
+          "reasons": [
+            "correct_quote_sides"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 22,
+      "name": "Put spread when downside skew is steep",
+      "family": "options",
+      "split": "holdout",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/4/2015/03/education-brochure.pdf",
+        "https://data.bloomberglp.com/professional/sites/4/BLPAPI-Core-User-Guide.pdf",
+        "https://www.optionseducation.org/strategies/all-strategies/bear-put-spread"
+      ],
+      "baseline": {
+        "decision": "pause",
+        "reasons": [
+          "missing:downside_thesis_clears"
+        ],
+        "metrics": {
+          "skew_pct_points": "8",
+          "lower_break_even": "98",
+          "expiry_pnl": "3",
+          "loss_at_or_above_long_strike": "-2"
+        }
+      },
+      "adverse": {
+        "same_maturity": {
+          "decision": "pause",
+          "reasons": [
+            "same_maturity"
+          ],
+          "metrics": {}
+        },
+        "current_leg_quotes": {
+          "decision": "pause",
+          "reasons": [
+            "current_leg_quotes"
+          ],
+          "metrics": {}
+        },
+        "same_underlying": {
+          "decision": "pause",
+          "reasons": [
+            "same_underlying"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 23,
+      "name": "Fed meeting versus the contract’s monthly average",
+      "family": "rates",
+      "split": "holdout",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/10/LUISS_2018Primer.pdf",
+        "https://assets.bbhub.io/professional/sites/10/Proprietary-Commodity-Data-on-Bloomberg-Brochure.pdf",
+        "https://www.cmegroup.com/markets/interest-rates/stirs/30-day-federal-fund/specs"
+      ],
+      "baseline": {
+        "decision": "pause",
+        "reasons": [
+          "missing:min_difference"
+        ],
+        "metrics": {
+          "monthly_avg_pct": "4.375",
+          "implied_settlement": "95.625",
+          "paper_pnl_points": "0.050"
+        }
+      },
+      "adverse": {
+        "exact_futures_month": {
+          "decision": "pause",
+          "reasons": [
+            "exact_futures_month"
+          ],
+          "metrics": {}
+        },
+        "effective_date_known": {
+          "decision": "pause",
+          "reasons": [
+            "effective_date_known"
+          ],
+          "metrics": {}
+        },
+        "monthly_day_weights_match": {
+          "decision": "pause",
+          "reasons": [
+            "monthly_day_weights_match"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 24,
+      "name": "Peer divergence with an earnings check",
+      "family": "equity_signals",
+      "split": "development",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/10/AdamLei-WP.pdf",
+        "https://assets.bbhub.io/professional/sites/10/Bloomberg_SeeAllSides.pdf"
+      ],
+      "baseline": {
+        "decision": "stage_paper",
+        "reasons": [],
+        "metrics": {
+          "two_leg_pnl_usd": "300"
+        }
+      },
+      "adverse": {
+        "same_sector_peer": {
+          "decision": "pause",
+          "reasons": [
+            "same_sector_peer"
+          ],
+          "metrics": {}
+        },
+        "event_calendar_clear": {
+          "decision": "pause",
+          "reasons": [
+            "event_calendar_clear"
+          ],
+          "metrics": {}
+        },
+        "thesis_intact": {
+          "decision": "pause",
+          "reasons": [
+            "thesis_intact"
+          ],
+          "metrics": {}
+        },
+        "matched_exit": {
+          "decision": "pause",
+          "reasons": [
+            "matched_exit"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 25,
+      "name": "Refinery margin spread",
+      "family": "futures",
+      "split": "development",
+      "source_urls": [
+        "https://assets.bbhub.io/professional/sites/10/Proprietary-Commodity-Data-on-Bloomberg-Brochure.pdf",
+        "https://www.cmegroup.com/articles/2024/trading-crack-spreads.html"
+      ],
+      "baseline": {
+        "decision": "stage_paper",
+        "reasons": [],
+        "metrics": {
+          "entry_spread_usd_input_bbl": "21.80",
+          "pnl_usd_input_bbl": "2.00"
+        }
+      },
+      "adverse": {
+        "same_delivery_month": {
+          "decision": "pause",
+          "reasons": [
+            "same_delivery_month"
+          ],
+          "metrics": {}
+        },
+        "same_settlement_date": {
+          "decision": "pause",
+          "reasons": [
+            "same_settlement_date"
+          ],
+          "metrics": {}
+        },
+        "same_contracts": {
+          "decision": "pause",
+          "reasons": [
+            "same_contracts"
+          ],
+          "metrics": {}
+        },
+        "unit_conversion_checked": {
+          "decision": "pause",
+          "reasons": [
+            "unit_conversion_checked"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 26,
+      "name": "Analyst upgrades hidden by a flat consensus",
+      "family": "earnings",
+      "split": "development",
+      "source_urls": [
+        "https://assets.bbhub.io/professional/sites/10/Bloomberg_SeeAllSides.pdf"
+      ],
+      "baseline": {
+        "decision": "stage_paper",
+        "reasons": [],
+        "metrics": {
+          "headline_change": "0.00",
+          "matched_mean_revision": "0.10",
+          "pnl_usd_share": "1.50"
+        }
+      },
+      "adverse": {
+        "same_eps_basis": {
+          "decision": "pause",
+          "reasons": [
+            "same_eps_basis"
+          ],
+          "metrics": {}
+        },
+        "same_fiscal_period": {
+          "decision": "pause",
+          "reasons": [
+            "same_fiscal_period"
+          ],
+          "metrics": {}
+        },
+        "contributor_ids_matched": {
+          "decision": "pause",
+          "reasons": [
+            "contributor_ids_matched"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 27,
+      "name": "ADR premium after currency conversion",
+      "family": "fx",
+      "split": "holdout",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/10/2018_Bloomberg_GEI_Overview.pdf",
+        "https://data.bloomberglp.com/professional/sites/10/Getting-Started-Guide-for-Students-English.pdf",
+        "https://data.bloomberglp.com/professional/sites/4/BLPAPI-Core-User-Guide.pdf",
+        "https://www.sec.gov/files/litigation/admin/2018/33-10586.pdf"
+      ],
+      "baseline": {
+        "decision": "pause",
+        "reasons": [
+          "missing:quote_hurdle_usd"
+        ],
+        "metrics": {
+          "parity_usd": "55.00",
+          "premium_usd": "2.20",
+          "pnl_usd_adr": "1.70"
+        }
+      },
+      "adverse": {
+        "receipt_ratio_unchanged": {
+          "decision": "pause",
+          "reasons": [
+            "receipt_ratio_unchanged"
+          ],
+          "metrics": {}
+        },
+        "overlapping_marks": {
+          "decision": "pause",
+          "reasons": [
+            "overlapping_marks"
+          ],
+          "metrics": {}
+        },
+        "exact_currency_quote": {
+          "decision": "pause",
+          "reasons": [
+            "exact_currency_quote"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 28,
+      "name": "Days to cover doubled without new shorts",
+      "family": "equity_signals",
+      "split": "development",
+      "source_urls": [
+        "https://www.buyins.net/articles/gamesshortsellersplay.pdf",
+        "https://faq.library.upenn.edu/business/faq/45338"
+      ],
+      "baseline": {
+        "decision": "pass",
+        "reasons": [],
+        "metrics": {
+          "days_before": "5",
+          "days_after": "10",
+          "short_share_change": "0"
+        }
+      },
+      "adverse": {
+        "same_volume_lookback": {
+          "decision": "pause",
+          "reasons": [
+            "same_volume_lookback"
+          ],
+          "metrics": {}
+        },
+        "split_adjustments_match": {
+          "decision": "pause",
+          "reasons": [
+            "split_adjustments_match"
+          ],
+          "metrics": {}
+        },
+        "same_reported_short_series": {
+          "decision": "pause",
+          "reasons": [
+            "same_reported_short_series"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 29,
+      "name": "Daily-reset ETF holding-period test",
+      "family": "funds",
+      "split": "development",
+      "source_urls": [
+        "https://www.blackrock.com/gls-download/literature/investor-guide/etf-guide-for-institutional-investors.pdf",
+        "https://data.bloomberglp.com/professional/sites/10/2018_Bloomberg_GEI_Overview.pdf",
+        "https://www.investor.gov/introduction-investing/general-resources/news-alerts/alerts-bulletins/investor-alerts/sec"
+      ],
+      "baseline": {
+        "decision": "pass",
+        "reasons": [],
+        "metrics": {
+          "benchmark_return_pct": "-1.0000",
+          "leveraged_return_pct": "-4.0000",
+          "idealized_pnl_usd": "-400.0000"
+        }
+      },
+      "adverse": {
+        "daily_reset_confirmed": {
+          "decision": "pause",
+          "reasons": [
+            "daily_reset_confirmed"
+          ],
+          "metrics": {}
+        },
+        "consecutive_benchmark_marks": {
+          "decision": "pause",
+          "reasons": [
+            "consecutive_benchmark_marks"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 30,
+      "name": "Closed-end fund tender with proration",
+      "family": "funds",
+      "split": "development",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/10/2018_Bloomberg_GEI_Overview.pdf",
+        "https://www.sec.gov/Archives/edgar/data/1836057/000119312524182259/d843794dex99a1i.htm"
+      ],
+      "baseline": {
+        "decision": "pass",
+        "reasons": [],
+        "metrics": {
+          "accepted_price": "9.8000",
+          "residual_break_even": "9.0000",
+          "modeled_value_per_share": "9.162500",
+          "pnl_usd": "-37.500000"
+        }
+      },
+      "adverse": {
+        "offer_terms_current": {
+          "decision": "pause",
+          "reasons": [
+            "offer_terms_current"
+          ],
+          "metrics": {}
+        },
+        "matched_nav_proration_scenario": {
+          "decision": "pause",
+          "reasons": [
+            "matched_nav_proration_scenario"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 31,
+      "name": "Copper positioning unwind",
+      "family": "futures",
+      "split": "development",
+      "source_urls": [
+        "https://data.bloomberglp.com/promo/sites/12/208558_BCOM-June2018Outlook.pdf",
+        "https://www.cftc.gov/MarketReports/CommitmentsofTraders/ReleaseSchedule/index.htm",
+        "https://publicreporting.cftc.gov/stories/s/r4w3-av2u"
+      ],
+      "baseline": {
+        "decision": "pause",
+        "reasons": [
+          "missing:price_confirmed"
+        ],
+        "metrics": {
+          "net_position_change": "-20000",
+          "pnl_usd_lb": "0.05"
+        }
+      },
+      "adverse": {
+        "same_cot_category": {
+          "decision": "pause",
+          "reasons": [
+            "same_cot_category"
+          ],
+          "metrics": {}
+        },
+        "futures_only": {
+          "decision": "pause",
+          "reasons": [
+            "futures_only"
+          ],
+          "metrics": {}
+        },
+        "publication_before_entry": {
+          "decision": "pause",
+          "reasons": [
+            "publication_before_entry"
+          ],
+          "metrics": {}
+        },
+        "exact_contract": {
+          "decision": "pause",
+          "reasons": [
+            "exact_contract"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 32,
+      "name": "Inflation compensation versus real yields",
+      "family": "rates",
+      "split": "holdout",
+      "source_urls": [
+        "https://assets.bbhub.io/professional/sites/10/LUISS-Bloomberg-Primer.pdf"
+      ],
+      "baseline": {
+        "decision": "stage_paper",
+        "reasons": [],
+        "metrics": {
+          "entry_breakeven_pct": "2.55",
+          "widening_bps": "15.00",
+          "real_move_bps": "5.00",
+          "exit_spread_move_bps": "12.00"
+        }
+      },
+      "adverse": {
+        "matched_tenors": {
+          "decision": "pause",
+          "reasons": [
+            "matched_tenors"
+          ],
+          "metrics": {}
+        },
+        "matched_observation_times": {
+          "decision": "pause",
+          "reasons": [
+            "matched_observation_times"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 33,
+      "name": "Treasury auction tail on the same issue",
+      "family": "rates",
+      "split": "holdout",
+      "source_urls": [
+        "https://www.newyorkfed.org/medialibrary/media/research/staff_reports/sr1188.pdf",
+        "https://data.bloomberglp.com/professional/sites/10/Bloomberg-Index-Publications-Fixed-Income-Index-Methodology.pdf",
+        "https://www.cmegroup.com/education/courses/introduction-to-treasuries/calculating-us-treasury-pricing"
+      ],
+      "baseline": {
+        "decision": "pause",
+        "reasons": [
+          "missing:tail_floor_bps"
+        ],
+        "metrics": {
+          "auction_tail_bps": "3.00",
+          "clean_short_pnl_per_100": "0.21875"
+        }
+      },
+      "adverse": {
+        "exact_cusip": {
+          "decision": "pause",
+          "reasons": [
+            "exact_cusip"
+          ],
+          "metrics": {}
+        },
+        "fresh_when_issued_quote": {
+          "decision": "pause",
+          "reasons": [
+            "fresh_when_issued_quote"
+          ],
+          "metrics": {}
+        },
+        "same_integral_price_points": {
+          "decision": "pause",
+          "reasons": [
+            "same_integral_price_points"
+          ],
+          "metrics": {}
+        },
+        "post_auction_entry": {
+          "decision": "pause",
+          "reasons": [
+            "post_auction_entry"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 34,
+      "name": "Transferable rights subscription economics",
+      "family": "corporate_actions",
+      "split": "development",
+      "source_urls": [
+        "https://assets.bbhub.io/professional/sites/10/Bloomberg-Global-Equity-Indices-Non-Market-Cap-Corporate-Action-Methodology_May2023.pdf",
+        "https://data.bloomberglp.com/professional/sites/10/2018_Bloomberg_GEI_Overview.pdf",
+        "https://www.sec.gov/Archives/edgar/data/1487610/000121390026032989/ea0277906-03_424b2.htm"
+      ],
+      "baseline": {
+        "decision": "pause",
+        "reasons": [
+          "missing:cost_hurdle"
+        ],
+        "metrics": {
+          "modeled_cost_per_share": "14.60",
+          "current_discount_usd": "0.40",
+          "modeled_gain_usd": "0.30"
+        }
+      },
+      "adverse": {
+        "rights_transferable": {
+          "decision": "pause",
+          "reasons": [
+            "rights_transferable"
+          ],
+          "metrics": {}
+        },
+        "settlement_within_deadline": {
+          "decision": "pause",
+          "reasons": [
+            "settlement_within_deadline"
+          ],
+          "metrics": {}
+        },
+        "subscription_ratio_matches": {
+          "decision": "pause",
+          "reasons": [
+            "subscription_ratio_matches"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 35,
+      "name": "ETF asset growth versus investor inflows",
+      "family": "funds",
+      "split": "development",
+      "source_urls": [
+        "https://www.blackrock.com/gls-download/literature/investor-guide/etf-guide-for-institutional-investors.pdf",
+        "https://www.linkedin.com/posts/bloomberg-professional-service_fflo-go-activity-7269461943877349377-r4UG"
+      ],
+      "baseline": {
+        "decision": "pass",
+        "reasons": [],
+        "metrics": {
+          "asset_change_usd": "50000000",
+          "nav_effect_usd": "50000000",
+          "unexplained_asset_change_usd": "0"
+        }
+      },
+      "adverse": {
+        "share_counts_unchanged": {
+          "decision": "pause",
+          "reasons": [
+            "share_counts_unchanged"
+          ],
+          "metrics": {}
+        },
+        "same_nav_share_dates": {
+          "decision": "pause",
+          "reasons": [
+            "same_nav_share_dates"
+          ],
+          "metrics": {}
+        },
+        "no_split": {
+          "decision": "pause",
+          "reasons": [
+            "no_split"
+          ],
+          "metrics": {}
+        },
+        "flow_receipt_present": {
+          "decision": "pause",
+          "reasons": [
+            "flow_receipt_present"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 36,
+      "name": "Continuous futures breakout at contract roll",
+      "family": "futures",
+      "split": "development",
+      "source_urls": [
+        "https://assets.bbhub.io/professional/sites/10/Proprietary-Commodity-Data-on-Bloomberg-Brochure.pdf",
+        "https://data.bloomberglp.com/professional/sites/4/BLPAPI-Core-User-Guide.pdf"
+      ],
+      "baseline": {
+        "decision": "pass",
+        "reasons": [],
+        "metrics": {
+          "display_change_usd_mmbtu": "0.20",
+          "old_contract_change_usd_mmbtu": "0.01",
+          "new_contract_change_usd_mmbtu": "0.01"
+        }
+      },
+      "adverse": {
+        "fixed_contracts_identified": {
+          "decision": "pause",
+          "reasons": [
+            "fixed_contracts_identified"
+          ],
+          "metrics": {}
+        },
+        "matched_roll_settings": {
+          "decision": "pause",
+          "reasons": [
+            "matched_roll_settings"
+          ],
+          "metrics": {}
+        },
+        "same_settlement_dates": {
+          "decision": "pause",
+          "reasons": [
+            "same_settlement_dates"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 37,
+      "name": "Treasury bill discount versus investment yield",
+      "family": "rates",
+      "split": "holdout",
+      "source_urls": [
+        "https://professional.content.cirrus.bloomberg.com/professional2023/insights/markets/bloomberg-pro-tips-analyze-and-price-bonds-on-the-go-with-yas-mobile/",
+        "https://treasurydirect.gov/marketable-securities/understanding-pricing/"
+      ],
+      "baseline": {
+        "decision": "stage_paper",
+        "reasons": [],
+        "metrics": {
+          "cost_per_100": "98.86250000000000000000000000000000000000",
+          "investment_yield_pct": "4.615",
+          "cost_usd": "9886.25",
+          "redemption_gain_usd": "113.75"
+        }
+      },
+      "adverse": {
+        "exact_bill": {
+          "decision": "pause",
+          "reasons": [
+            "exact_bill"
+          ],
+          "metrics": {}
+        },
+        "settlement_date_verified": {
+          "decision": "pause",
+          "reasons": [
+            "settlement_date_verified"
+          ],
+          "metrics": {}
+        },
+        "yield_conventions_match": {
+          "decision": "pause",
+          "reasons": [
+            "yield_conventions_match"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 38,
+      "name": "Bond price check at the intended trade size",
+      "family": "credit",
+      "split": "development",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/10/750114_Navigate-every-market.pdf",
+        "https://www.finra.org/sites/default/files/TRACE_Overview.pdf"
+      ],
+      "baseline": {
+        "decision": "pass",
+        "reasons": [],
+        "metrics": {
+          "ask_excess_points": "0.70"
+        }
+      },
+      "adverse": {
+        "exact_cusip": {
+          "decision": "pause",
+          "reasons": [
+            "exact_cusip"
+          ],
+          "metrics": {}
+        },
+        "fresh_trade_and_quote": {
+          "decision": "pause",
+          "reasons": [
+            "fresh_trade_and_quote"
+          ],
+          "metrics": {}
+        },
+        "quote_size_known": {
+          "decision": "pause",
+          "reasons": [
+            "quote_size_known"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 39,
+      "name": "Intraday volume at a comparable session time",
+      "family": "equity_signals",
+      "split": "development",
+      "source_urls": [
+        "https://data.bloomberglp.com/professional/sites/10/Getting-Started-Guide-for-Students-English.pdf",
+        "https://www.valdosta.edu/colleges/business/deans-office/documents/bloomberg-cheat-sheets/charts-and-technical-indicators.pdf"
+      ],
+      "baseline": {
+        "decision": "pause",
+        "reasons": [
+          "missing:trigger_cleared"
+        ],
+        "metrics": {
+          "relative_volume": "2",
+          "pnl_usd_share": "0.80"
+        }
+      },
+      "adverse": {
+        "same_session_elapsed_time": {
+          "decision": "pause",
+          "reasons": [
+            "same_session_elapsed_time"
+          ],
+          "metrics": {}
+        },
+        "regular_hours_only": {
+          "decision": "pause",
+          "reasons": [
+            "regular_hours_only"
+          ],
+          "metrics": {}
+        },
+        "comparable_session_length": {
+          "decision": "pause",
+          "reasons": [
+            "comparable_session_length"
+          ],
+          "metrics": {}
+        }
+      }
+    },
+    {
+      "id": 40,
+      "name": "VIX futures settlement versus spot VIX",
+      "family": "futures",
+      "split": "development",
+      "source_urls": [
+        "https://assets.bbhub.io/professional/sites/10/Proprietary-Commodity-Data-on-Bloomberg-Brochure.pdf",
+        "https://www.cboe.com/tradable-products/vix/vix-futures/specifications",
+        "https://www.cboe.com/tradable_products/vix/vix_futures/specifications"
+      ],
+      "baseline": {
+        "decision": "pass",
+        "reasons": [],
+        "metrics": {
+          "futures_minus_spot_points": "3.50",
+          "short_pnl_usd_contract": "-800.00"
+        }
+      },
+      "adverse": {
+        "exact_full_size_contract": {
+          "decision": "pause",
+          "reasons": [
+            "exact_full_size_contract"
+          ],
+          "metrics": {}
+        },
+        "expiry_matches": {
+          "decision": "pause",
+          "reasons": [
+            "expiry_matches"
+          ],
+          "metrics": {}
+        },
+        "opening_quotation_confirmed": {
+          "decision": "pause",
+          "reasons": [
+            "opening_quotation_confirmed"
+          ],
+          "metrics": {}
+        }
+      }
+    }
+  ]
+}

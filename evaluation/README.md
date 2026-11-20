@@ -13,6 +13,15 @@ Editorial rank is not measured demand or performance. A qualified reviewer
 must turn a selected case into a finance-specific executable fixture before a
 passing run can be described as domain-correct.
 
+## Executable arithmetic for all 40 cases
+
+The [synthetic finance protocol](finance-protocol.v1.md) adds normalized inputs,
+decision rules, a separately authored answer sheet, and a reproducible report
+for all 40 cases. Run `python3 scripts/replay_finance.py --check` to verify the
+calculations and case-specific pauses against the frozen expectations. The
+source catalog remains the provenance record. Case 10 alone has a durable
+operational replay covering authority and journal readback.
+
 ## Run classification
 
 `python3 scripts/verify_replay.py runs.json` reads an array of run records and
@@ -33,7 +42,7 @@ does not authenticate them or independently verify finance calculations.
 
 The [case 10 replay protocol](protocol.v1.md) now adds one executable
 synthetic fixture, ten negative cases, a separate read-only verifier, and a
-deterministic report. The other 39 cases remain unreviewed source prose.
+deterministic report. The other 39 cases do not yet have a durable operational replay.
 Do not publish a completion rate from these fixtures alone. Issue #7 still
 needs domain-reviewed calculations across the selected corpus, real matched
 baselines, holdout families, human time, latency, full cost, and uncertainty.

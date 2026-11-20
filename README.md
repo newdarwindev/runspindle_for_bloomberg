@@ -9,7 +9,7 @@ A static marketing and source-library site for the **Runspindle for the Bloomber
 - [Ranked catalog](assets/runspindle_bloomberg_ranked.csv): the same 40 scenarios, ranked by the supplied scoring fields.
 - [Asset guide](ASSETS.md): annotations and relationships for every original asset.
 - [Gallery index](assets/Runspindle_Gallery_Index.html): 37-page map with citations for the eight additional business cases.
-- [Synthetic replay corpus and case 10 harness](evaluation/README.md): 40 source-linked cases and one executable replay with negative cases; finance rules and live outcomes remain unverified.
+- [Synthetic replay corpus and case 10 harness](evaluation/README.md): 40 executable synthetic calculations and one durable operational replay; domain review and live outcomes remain open.
 - [Full-cost model](economics/README.md): an input template and calculator for comparing four alternatives without inventing costs or savings.
 - [Case 10 draft contract](pilot/case-10-contract-v0.1.md) and [Console prototype](src/prototype.html): a synthetic paper-flow study for issue #4, without live access or accepted outcomes.
 - [Synthetic run coordinator](pilot/runtime-README.md): a local durable state machine and demo traces for issue #5, with no live adapter or accepted outcome.
