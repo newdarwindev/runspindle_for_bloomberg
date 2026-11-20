@@ -29,8 +29,9 @@ class IntegrityTests(unittest.TestCase):
                              entitled=True, fresh=True, no_other_corporate_action=True),
             lease_until=(NOW + timedelta(hours=1)).isoformat(),
             deadline=(NOW + timedelta(minutes=30)).isoformat())
-        self.runtime.preview(self.run_id, **IDENTITY)
-        self.runtime.approve(self.run_id, **IDENTITY, accepted=True)
+        preview = self.runtime.preview(self.run_id, **IDENTITY)
+        self.runtime.approve(self.run_id, **IDENTITY, accepted=True,
+                             preview_revision=preview["revision"], draft_hash=preview["draft_hash"])
 
     def tearDown(self):
         self.runtime.close()

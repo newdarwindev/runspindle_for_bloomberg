@@ -60,9 +60,10 @@ class AdapterTests(unittest.TestCase):
             self.assertEqual(runtime.status(run_id)["source_receipt"]["status"], "ok")
             with self.assertRaises(ValueError):
                 runtime.revise(run_id, result.observation, **identity)
-            runtime.preview(run_id, **identity)
+            preview = runtime.preview(run_id, **identity)
             self.assertEqual(runtime.status(run_id)["destination_receipts"][-1]["stage"], "draft")
-            runtime.approve(run_id, **identity, accepted=True)
+            runtime.approve(run_id, **identity, accepted=True,
+                            preview_revision=preview["revision"], draft_hash=preview["draft_hash"])
             runtime.submit(run_id, **identity, mode="timeout_after_commit")
             with self.assertRaises(ValueError):
                 runtime.submit(run_id, **identity)
@@ -85,8 +86,9 @@ class AdapterTests(unittest.TestCase):
                 deadline=(NOW + timedelta(minutes=30)).isoformat())
             identity = dict(actor_id="operator", account_id=self.request.account_id,
                             session_id=self.request.session_id)
-            runtime.preview(run_id, **identity)
-            runtime.approve(run_id, **identity, accepted=True)
+            preview = runtime.preview(run_id, **identity)
+            runtime.approve(run_id, **identity, accepted=True,
+                            preview_revision=preview["revision"], draft_hash=preview["draft_hash"])
             now[0] += timedelta(minutes=11)
             with self.assertRaisesRegex(PermissionError, "stale"):
                 runtime.submit(run_id, **identity)

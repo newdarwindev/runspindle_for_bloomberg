@@ -56,8 +56,9 @@ def build_report():
             run_id, source = observe(fixture)
             if run_id is None or source.status != "ok":
                 raise AssertionError("Expected synthetic observation")
-            runtime.preview(run_id, **IDENTITY)
-            runtime.approve(run_id, **IDENTITY, accepted=True)
+            preview = runtime.preview(run_id, **IDENTITY)
+            runtime.approve(run_id, **IDENTITY, accepted=True,
+                            preview_revision=preview["revision"], draft_hash=preview["draft_hash"])
             return run_id
 
         ledger = begin()
@@ -82,8 +83,9 @@ def build_report():
 
         ledger = begin()
         declined, _ = observe()
-        runtime.preview(declined, **IDENTITY)
-        runtime.approve(declined, **IDENTITY, accepted=False)
+        preview = runtime.preview(declined, **IDENTITY)
+        runtime.approve(declined, **IDENTITY, accepted=False,
+                        preview_revision=preview["revision"], draft_hash=preview["draft_hash"])
         try:
             runtime.submit(declined, **IDENTITY)
             declined_actual = "submitted"

@@ -81,8 +81,9 @@ class RuntimeSchemaTests(unittest.TestCase):
                 lease_until=(NOW + timedelta(hours=1)).isoformat(),
                 deadline=(NOW + timedelta(minutes=30)).isoformat(),
             )
-            runtime.preview(run, **IDENTITY)
-            runtime.approve(run, **IDENTITY, accepted=True)
+            preview = runtime.preview(run, **IDENTITY)
+            runtime.approve(run, **IDENTITY, accepted=True,
+                            preview_revision=preview["revision"], draft_hash=preview["draft_hash"])
             runtime.submit(run, **IDENTITY, mode="timeout_after_commit")
             return run
 

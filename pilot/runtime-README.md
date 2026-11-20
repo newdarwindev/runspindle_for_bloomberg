@@ -50,6 +50,11 @@ readback. A mismatch after restore stays fenced from revision and submission,
 even if the restored snapshot reports zero submissions.
 Revising the synthetic observation before submission creates a new revision
 and invalidates the previous draft and approval.
+Approval and decline require the boolean decision, `preview_revision`, and
+`draft_hash` from the snapshot the operator reviewed. `Runtime.approve` checks
+both preview fields under its write transaction before recording a decision.
+When a preview changes while a decision is pending, the operator must review
+the current preview before deciding again, even when the draft bytes match.
 An adapter-backed observation requires a new sourced run instead of an
 in-place revision, so its source receipt remains bound to the exact values.
 

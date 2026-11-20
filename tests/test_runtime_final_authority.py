@@ -33,8 +33,9 @@ class FinalAuthorityTests(unittest.TestCase):
                         SyntheticObservationAdapter(FIXTURE, clock=lambda: now[0]),
                         ObservationRequest(IDENTITY["account_id"], IDENTITY["session_id"], FIXTURE["instrument_id"]),
                         actor_id=IDENTITY["actor_id"], lease_until=lease.isoformat(), deadline=deadline.isoformat())
-                    runtime.preview(run_id, **IDENTITY)
-                    runtime.approve(run_id, **IDENTITY, accepted=True)
+                    preview = runtime.preview(run_id, **IDENTITY)
+                    runtime.approve(run_id, **IDENTITY, accepted=True,
+                                    preview_revision=preview["revision"], draft_hash=preview["draft_hash"])
                     original = runtime._write
                     def delayed(*args):
                         original(*args)

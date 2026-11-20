@@ -74,8 +74,9 @@ class IndependentVerifierTests(unittest.TestCase):
                 SyntheticObservationAdapter(FIXTURE, clock=lambda: NOW), request,
                 actor_id="operator", lease_until=(NOW + timedelta(hours=1)).isoformat(),
                 deadline=(NOW + timedelta(minutes=30)).isoformat())
-            runtime.preview(run_id, **identity)
-            runtime.approve(run_id, **identity, accepted=True)
+            preview = runtime.preview(run_id, **identity)
+            runtime.approve(run_id, **identity, accepted=True,
+                            preview_revision=preview["revision"], draft_hash=preview["draft_hash"])
             runtime.submit(run_id, **identity)
             runtime.readback(run_id, **identity)
             self.assertEqual(verify_case10(path, run_id, FIXTURE, PROTOCOL)["status"], "synthetic_verified")

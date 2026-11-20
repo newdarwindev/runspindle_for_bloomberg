@@ -34,8 +34,9 @@ def build_demo():
                 lease_until=(now + timedelta(hours=1)).isoformat(),
                 deadline=(now + timedelta(minutes=30)).isoformat())
             assert run_id and source_result.status == "ok"
-            runtime.preview(run_id, **identity)
-            runtime.approve(run_id, **identity, accepted=True)
+            preview = runtime.preview(run_id, **identity)
+            runtime.approve(run_id, **identity, accepted=True,
+                            preview_revision=preview["revision"], draft_hash=preview["draft_hash"])
             before_readback = runtime.submit(run_id, **identity, mode=mode)
             after_readback = runtime.readback(run_id, **identity)
             traces.append({"mode": mode, "run_id": run_id,
