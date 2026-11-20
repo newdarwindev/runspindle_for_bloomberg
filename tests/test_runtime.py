@@ -190,7 +190,8 @@ with closing(Runtime(sys.argv[1])) as r:
         readback = self.runtime.destination.readback
         for field, value in (("status", "queued"), ("stage", "execute"), ("route", "other"),
                              ("operation_id", "other-op"), ("adapter_version", "future"),
-                             ("journal_ref_sha256", None), ("status", "absent_inconclusive"),
+                             ("journal_ref_sha256", None), ("journal_ref_sha256", "0" * 64),
+                             ("status", "mismatch"), ("status", "absent_inconclusive"),
                              ("unreviewed_payload", "synthetic extra field")):
             with self.subTest(field=field, value=value):
                 run_id = self.approved()
@@ -208,6 +209,71 @@ with closing(Runtime(sys.argv[1])) as r:
                 self.assertEqual(self.runtime.events(run_id), history)
         self.runtime.destination.readback = readback
         self.assertEqual(self.runtime.readback(run_id, **self.identity)["state"], "recorded")
+
+    def test_fresh_process_refuses_confirmation_without_independent_journal_row(self):
+        run_id = self.approved()
+        run = self.runtime.submit(run_id, **self.identity, mode="timeout_before_commit")
+        receipt = dict(self.runtime.destination.readback(run), status="confirmed",
+                       journal_ref_sha256="a" * 64)
+        history = self.runtime.events(run_id)
+        script = '''
+import json, sys
+from contextlib import closing
+from pilot.runtime import IntegrityError, Runtime
+with closing(Runtime(sys.argv[1], create=False)) as runtime:
+    runtime.destination.readback = lambda _: json.loads(sys.argv[4])
+    try:
+        runtime.readback(sys.argv[2], **json.loads(sys.argv[3]))
+    except IntegrityError:
+        raise SystemExit(3)
+'''
+        child = subprocess.run(
+            [sys.executable, "-B", "-c", script, str(self.path), run_id,
+             json.dumps(self.identity), json.dumps(receipt)],
+            cwd=Path(__file__).resolve().parents[1], capture_output=True, text=True, timeout=10,
+        )
+        self.assertEqual(child.returncode, 3, child.stderr)
+        self.assertEqual(self.runtime.status(run_id), run)
+        self.assertEqual(self.runtime.events(run_id), history)
+        with closing(sqlite3.connect(self.path)) as observer:
+            self.assertEqual(observer.execute("SELECT count(*) FROM journal").fetchone(), (0,))
+
+    def test_receipt_reader_cannot_manufacture_matching_journal_evidence(self):
+        run_id = self.approved()
+        run = self.runtime.submit(run_id, **self.identity, mode="timeout_before_commit")
+        readback = self.runtime.destination.readback
+
+        def manufacture(snapshot):
+            self.runtime.db.execute("INSERT INTO journal VALUES (?,?,?,?,?)", (
+                snapshot["operation_id"], snapshot["account_id"], snapshot["instrument_id"],
+                snapshot["draft_hash"], self.now[0].isoformat(),
+            ))
+            return readback(snapshot)
+
+        self.runtime.destination.readback = manufacture
+        with self.assertRaises(IntegrityError):
+            self.runtime.readback(run_id, **self.identity)
+        self.assertEqual(self.runtime.status(run_id), run)
+        with closing(sqlite3.connect(self.path)) as observer:
+            self.assertEqual(observer.execute("SELECT count(*) FROM journal").fetchone(), (0,))
+
+    def test_readback_input_is_detached_from_the_retained_run(self):
+        run_id = self.approved()
+        run = self.runtime.submit(run_id, **self.identity)
+        readback = self.runtime.destination.readback
+
+        def mutate(snapshot):
+            receipt = readback(snapshot)
+            snapshot["account_id"] = "synthetic:other"
+            snapshot["draft"]["decision"] = "pause"
+            return receipt
+
+        self.runtime.destination.readback = mutate
+        result = self.runtime.readback(run_id, **self.identity)
+        self.assertEqual(result["state"], "recorded")
+        self.assertEqual(result["account_id"], run["account_id"])
+        self.assertEqual(result["draft"], run["draft"])
+        self.assertEqual(result["draft_hash"], run["draft_hash"])
 
     def test_quarantined_restore_and_cancel_keep_reconciliation_fenced(self):
         run_id = self.approved()

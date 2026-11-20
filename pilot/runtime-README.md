@@ -35,7 +35,11 @@ The only destination is a local simulated journal table. A submission first
 persists `submitting`. Its simulated effect and response then commit under a
 state fence. The `success` response still waits for readback. A timeout after
 commit leaves `uncertain`; readback by operation ID can confirm it. A missing
-readback stays `uncertain` because absence may be inconclusive. A duplicate
+readback stays `uncertain` because absence may be inconclusive. Before recording
+a readback, the runtime independently derives the receipt from the bound journal
+row inside the same transaction. The adapter gets a detached snapshot. A receipt
+that differs from the journal or an adapter write through the observation
+transaction aborts the transition. A duplicate
 submit is rejected. Cancellation fences new submissions but preserves an
 unknown or confirmed effect for reconciliation. Takeover clears approval. If
 it commits after submission intent and before execution, the destination call
