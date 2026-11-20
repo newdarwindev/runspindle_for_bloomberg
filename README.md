@@ -16,6 +16,7 @@ A static marketing and source-library site for the **Runspindle for the Bloomber
 - [Synthetic adapter contracts](pilot/adapters-README.md): source and paper destination interfaces for issue #6, with an explicit live-access blocker.
 - [Security and operations review pack](operations/security-review-v0.1.md): draft threat model, failure evidence, runbook, and pilot blockers for issue #8.
 - [Design-partner pilot pack](pilot/design-partner-pilot-pack.md): preflight checklist and synthetic episode register for issue #9; no live pilot is authorized.
+- [Launch decision and research release plan](operations/launch-decision-v1.md): evidence gates, claims audit, pricing research, and release and rollback checks.
 
 ## Build locally
 

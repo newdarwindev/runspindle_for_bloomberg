@@ -18,19 +18,35 @@
   <main id="main">
     <section class="hero" id="top">
       <div class="hero-copy">
-        <p class="eyebrow"><span class="pulse"></span> Workflow product concept / November 2026</p>
+        <p class="eyebrow"><span class="pulse"></span> Research preview / November 2026</p>
         <h1>Market checks.<br><em>Human judgment.</em><br>Verified records.</h1>
         <p class="hero-lede">A proposed workflow layer around the Bloomberg Terminal: repeatable observations, explicit operator decisions, and evidence of what happened next.</p>
         <div class="hero-actions"><a class="button primary" href="#workflows">Explore 40 workflows <span>↗</span></a><a class="button outline" href="assets/runspindle_bloomberg_product.pdf">Read the product brief <span>↓</span></a></div>
-        <p class="hero-note">Independent concept · fictional cases and synthetic values · no live integration claimed</p>
+        <p class="hero-note">Independent concept with fictional cases and synthetic values. <a href="#research-status">Research status and access</a></p>
       </div>
       <div class="hero-art"><div class="art-frame"><img src="gallery/01.webp" alt="Conceptual Runspindle workspace with a sequence from authorization through evaluation" fetchpriority="high"><span class="art-label">01 / Workflow gallery</span></div><div class="art-float"><span class="float-kicker">RUN RECORD / CONCEPT</span><strong>Observe → decide → verify</strong><small>One accountable sequence</small></div></div>
       <div class="hero-grid" aria-label="Catalog overview"><div><strong>40</strong><span>documented scenarios</span></div><div><strong>08</strong><span>business workflows</span></div><div><strong>32</strong><span>Terminal-only paper workflows</span></div><div><strong>37</strong><span>gallery pages</span></div></div>
     </section>
 
+    <section class="section method research-status" id="research-status" aria-labelledby="research-heading">
+      <div class="section-intro">
+        <h2 id="research-heading">Research preview</h2>
+        <p>Explore the workflow catalog and try the synthetic paper Console. Customer onboarding, live Terminal access, and production service remain pending.</p>
+        <a class="text-link" href="prototype.html">Open the synthetic Console <span aria-hidden="true">↗</span></a>
+      </div>
+      <dl class="research-faq">
+        <dt>What can I try?</dt>
+        <dd>The local case 10 demo uses invented prices and a simulated record. The gallery illustrates proposed workflows.</dd>
+        <dt>Can I connect a Terminal or apply for a pilot?</dt>
+        <dd>Any pilot requires validated data rights, a scoped access plan, and signed participation terms. Pilot intake and pricing are pending.</dd>
+        <dt>What data does the preview use?</dt>
+        <dd>The site has no signup form or project analytics. GitHub Pages hosts the site. Your browser requests typefaces from Google Fonts and contacts source sites when you follow their links. Use synthetic examples and keep account details and market data private.</dd>
+      </dl>
+    </section>
+
     <section class="section method" id="method"><div class="section-intro"><p class="eyebrow">01 / Method</p><h2>A run should leave a record.</h2><p>Each scenario names a market observation, a bounded next step, and a checkable result. A pause or refusal is recorded as its own outcome; it is not counted as completed work.</p><a class="text-link" href="assets/runspindle-paper.pdf">Read the research proposal <span>↗</span></a><br><a class="text-link" href="prototype.html">Try the synthetic Console prototype <span>↗</span></a></div><div class="method-steps"><article><span class="step-index">01</span><div><h3>Observe</h3><p>Capture the exact security, benchmark, event, date and source conditions required by the task.</p></div></article><article><span class="step-index">02</span><div><h3>Decide or pause</h3><p>Use a stated rule and an operator gate when identity, access, data rights or real-world effects are uncertain.</p></div></article><article><span class="step-index">03</span><div><h3>Verify</h3><p>Match the authorized result to a receipt, source record or later market mark. Keep the evidence with the decision.</p></div></article></div></section>
 
-    <section class="feature section"><div class="feature-visual"><img src="gallery/30.webp" alt="Conceptual approval-gate scene for a fictional business workflow" loading="lazy"><span>Gallery case 30 / fictional business</span></div><div class="feature-copy"><p class="eyebrow">02 / Two modes</p><h2>From a Terminal observation to an accountable next step.</h2><div class="mode"><b>Business workflows <span>08</span></b><p>Use a specified market check to draft a quote, reconcile a payment or verify a fee in existing systems. A human approves consequential steps.</p></div><div class="mode"><b>Terminal-only paper workflows <span>32</span></b><p>Test a trading rule against entitled data. Record a pass or simulated entry and compare later marks. These are paper examples before costs.</p></div><a class="text-link" href="assets/runspindle_bloomberg_product.pdf">Open the product concept <span>↗</span></a></div></section>
+    <section class="feature section"><div class="feature-visual"><img src="gallery/30.webp" alt="Conceptual approval-gate scene for a fictional business workflow" loading="lazy"><span>Gallery case 30 / fictional business</span></div><div class="feature-copy"><p class="eyebrow">02 / Two modes</p><h2>From a Terminal observation to an accountable next step.</h2><div class="mode"><b>Business workflows <span>08</span></b><p>Use a specified market check to draft a quote, reconcile a payment or verify a fee in existing systems. A human approves consequential steps.</p></div><div class="mode"><b>Terminal-only paper workflows <span>32</span></b><p>Compare a proposed trading rule with synthetic marks. The scenarios illustrate paper passes and entries before costs.</p></div><a class="text-link" href="assets/runspindle_bloomberg_product.pdf">Open the product concept <span>↗</span></a></div></section>
 
     <section class="section workflows" id="workflows"><div class="section-heading"><div><p class="eyebrow">03 / Explore</p><h2>The workflow catalog</h2><p>Search the 40 supplied scenarios. Ranking and scoring come from the source CSV and are editorial priorities, not measured performance.</p></div><a class="text-link" href="assets/runspindle_bloomberg_workflows.csv">Download full CSV <span>↓</span></a></div><div class="catalog-controls"><label class="search-label"><span class="sr-only">Search workflows</span><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="Search cases, Terminal checks, outcomes…"></label><div class="filters" role="group" aria-label="Workflow mode"><button class="active" data-filter="all" aria-pressed="true">All <span>40</span></button><button data-filter="business" aria-pressed="false">Business <span>08</span></button><button data-filter="paper" aria-pressed="false">Paper <span>32</span></button></div></div><p id="result-count" class="result-count" aria-live="polite"></p><div id="workflow-list" class="workflow-list"></div><p id="empty" class="empty" hidden>No matching workflows. Try a broader term.</p></section>
 
