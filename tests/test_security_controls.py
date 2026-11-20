@@ -1,9 +1,11 @@
 import json
 import shutil
+import sqlite3
 import subprocess
 import sys
 import tempfile
 import unittest
+from contextlib import closing
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch
@@ -108,7 +110,7 @@ class SecurityControlTests(unittest.TestCase):
     def test_restored_snapshot_requires_manual_quarantine(self):
         run_id = self.approved()
         backup = Path(self.temp.name) / "backup.sqlite"
-        with __import__("sqlite3").connect(backup) as target:
+        with closing(sqlite3.connect(backup)) as target:
             self.runtime.db.backup(target)
         self.runtime.submit(run_id, **self.identity)
         self.runtime.readback(run_id, **self.identity)
@@ -122,6 +124,80 @@ class SecurityControlTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.runtime.submit(run_id, **self.identity)
         self.assertEqual(self.runtime.readback(run_id, **self.identity)["effect_status"], "unknown")
+
+    def test_restore_before_approval_cannot_repeat_a_later_effect(self):
+        run_id = self.create()
+        preview = self.runtime.preview(run_id, **self.identity)
+        self.assertIsNone(preview["operation_id"])
+        restored = Path(self.temp.name) / "restored-preview.sqlite"
+        with closing(sqlite3.connect(restored)) as target:
+            self.runtime.db.backup(target)
+
+        approved = self.runtime.approve(run_id, **self.identity, accepted=True)
+        self.runtime.submit(run_id, **self.identity)
+        self.runtime.readback(run_id, **self.identity)
+
+        with closing(Runtime(restored, clock=lambda: NOW, create=False)) as copy:
+            self.assertEqual(copy.status(run_id)["state"], "preview")
+            with self.assertRaises(PermissionError):
+                copy.quarantine_after_restore(run_id, **{**self.identity, "actor_id": "wrong"})
+            copy.quarantine_after_restore(run_id, **self.identity)
+
+        marker = Path(self.temp.name) / "unexpected-destination-call"
+        program = '''
+import sys
+from datetime import datetime
+from pathlib import Path
+from pilot.runtime import IntegrityError, Runtime
+
+path, run_id, marker = sys.argv[1:]
+clock = lambda: datetime.fromisoformat("2026-11-15T12:00:00+00:00")
+identity = dict(actor_id="operator", account_id="synthetic:desk", session_id="session")
+
+def forbidden(*args, **kwargs):
+    Path(marker).touch()
+    raise AssertionError("unexpected destination call")
+
+r = Runtime(path, clock=clock, create=False)
+try:
+    r.destination.approve = r.destination.execute = r.destination.readback = forbidden
+    for action, expected_error in (
+        (lambda: r.approve(run_id, **identity, accepted=True), ValueError),
+        (lambda: r.submit(run_id, **identity), ValueError),
+        (lambda: r.readback(run_id, **identity), IntegrityError),
+    ):
+        try:
+            action()
+        except expected_error:
+            continue
+        raise AssertionError("quarantined operation was allowed")
+finally:
+    r.close()
+'''
+        result = subprocess.run([sys.executable, "-B", "-c", program, str(restored), run_id, str(marker)],
+                                capture_output=True, text=True, timeout=10)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertFalse(marker.exists())
+        with closing(sqlite3.connect(self.path)) as original, closing(sqlite3.connect(restored)) as copy:
+            self.assertEqual(original.execute("SELECT operation_id FROM journal").fetchall(),
+                             [(approved["operation_id"],)])
+            self.assertEqual(copy.execute("SELECT operation_id FROM journal").fetchall(), [])
+            run = json.loads(copy.execute("SELECT data FROM runs WHERE id=?", (run_id,)).fetchone()[0])
+            self.assertEqual((run["state"], run["effect_status"], run["operation_id"], run["submissions"]),
+                             ("uncertain", "unknown", None, 0))
+            self.assertEqual(copy.execute(
+                "SELECT count(*) FROM events WHERE json_extract(payload, '$.action') = 'quarantine_after_restore'"
+            ).fetchone()[0], 1)
+
+    def test_restore_of_paused_approval_clears_inactive_operation(self):
+        run_id = self.approved()
+        paused = self.runtime.control(run_id, "pause", **self.identity)
+        self.assertIsNotNone(paused["operation_id"])
+        quarantined = self.runtime.quarantine_after_restore(run_id, **self.identity)
+        self.assertIsNone(quarantined["operation_id"])
+        self.assertEqual(quarantined["effect_status"], "unknown")
+        with self.assertRaises(ValueError):
+            self.runtime.revise(run_id, self.observation, **self.identity)
 
     def test_monitor_separates_queued_emitted_and_observed(self):
         confirmed = self.approved()
