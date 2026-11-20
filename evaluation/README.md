@@ -32,8 +32,9 @@ labels are supplied by the evaluator, so this script checks their presence; it
 does not authenticate them or independently verify finance calculations.
 
 The [case 10 replay protocol](protocol.v1.md) now adds one executable
-synthetic fixture, ten negative cases, a separate read-only verifier, and a
-deterministic report. The other 39 cases remain unreviewed source prose.
+synthetic fixture, ten negative cases, and a deterministic report. The independent
+verifier checks ledger and simulated journal evidence for every scenario,
+including refusals and unresolved outcomes. The other 39 cases remain unreviewed source prose.
 Do not publish a completion rate from these fixtures alone. Issue #7 still
 needs domain-reviewed calculations across the selected corpus, real matched
 baselines, holdout families, human time, latency, full cost, and uncertainty.

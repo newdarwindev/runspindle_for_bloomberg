@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "evidence_level": "synthetic_replay_only",
-  "protocol_sha256": "ff20de6cd08106fd785e767cd7c72b9f4f920883fc47bde4c3a1b88e43280715",
+  "protocol_sha256": "87987013738561a76b7cb703ccfbc2cfaf16b9cd2fe36e74d4052ef0cb77c659",
   "source_fixture_sha256": "9678b8fcf85d6345e92eb102b050695784f1e79729a7e4b24ddc2664bdeea19b",
   "case_count": 11,
   "passed": 11,
@@ -22,42 +22,42 @@
       "expected": "stale",
       "actual": "stale",
       "passed": true,
-      "detail": null
+      "detail": []
     },
     {
       "name": "missing_data",
       "expected": "missing",
       "actual": "missing",
       "passed": true,
-      "detail": null
+      "detail": []
     },
     {
       "name": "entitlement_failure",
       "expected": "not_entitled",
       "actual": "not_entitled",
       "passed": true,
-      "detail": null
+      "detail": []
     },
     {
       "name": "wrong_instrument",
       "expected": "target_mismatch",
       "actual": "target_mismatch",
       "passed": true,
-      "detail": null
+      "detail": []
     },
     {
       "name": "declined_approval",
       "expected": "paused",
       "actual": "paused",
       "passed": true,
-      "detail": null
+      "detail": []
     },
     {
       "name": "lost_response_before_commit",
       "expected": "unknown_effect",
       "actual": "unknown_effect",
       "passed": true,
-      "detail": null
+      "detail": []
     },
     {
       "name": "lost_response_after_commit",
@@ -71,21 +71,21 @@
       "expected": "duplicate_rejected",
       "actual": "duplicate_rejected",
       "passed": true,
-      "detail": null
+      "detail": []
     },
     {
       "name": "destination_mismatch",
       "expected": "mismatch_paused",
       "actual": "mismatch_paused",
       "passed": true,
-      "detail": null
+      "detail": []
     },
     {
       "name": "later_mark_revision",
       "expected": "revised_to_pause",
       "actual": "revised_to_pause",
       "passed": true,
-      "detail": null
+      "detail": []
     }
   ]
 }
