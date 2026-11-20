@@ -98,6 +98,27 @@ def preflight(plan):
             "blockers": blockers}
 
 
+def _validate_outcome_evidence(result):
+    if result["outcome"] == "accepted_authorized_completion" and (
+            not result["source_ref"] or not result["destination_ref"] or not result["reviewer_id"]):
+        raise ValueError("Accepted completion requires evidence and independent review")
+    if result["outcome"] == "correct_refusal" and not result["reviewer_id"]:
+        raise ValueError("Correct refusal requires reviewer")
+
+
+def _validate_baseline(name, baseline):
+    if not isinstance(baseline, dict) or set(baseline) != BASELINE_FIELDS:
+        raise ValueError(f"{name} baseline fields differ from schema")
+    if baseline["outcome"] not in OUTCOMES or not baseline["authority_ref"] or not baseline["budget_ref"]:
+        raise ValueError(f"{name} baseline needs outcome, authority, and budget")
+    _validate_outcome_evidence(baseline)
+    for field in ("human_active_seconds", "elapsed_seconds", "full_cost"):
+        value = baseline[field]
+        if value is not None and (isinstance(value, bool) or not isinstance(value, (int, float)) or
+                                  not math.isfinite(value) or value < 0):
+            raise ValueError(f"{name}.{field} must be nonnegative or null")
+
+
 def validate_episode(record):
     required = {"episode_id", "eligible_at", "outcome", "source_ref", "destination_ref",
                 "reviewer_id", "boundary_violation", "baselines", *METRICS}
@@ -113,28 +134,14 @@ def validate_episode(record):
     if not isinstance(record["baselines"], dict) or set(record["baselines"]) != set(BASELINES):
         raise ValueError("All baseline slots must be present, even if unknown")
     for name, baseline in record["baselines"].items():
-        if baseline is None:
-            continue
-        if not isinstance(baseline, dict) or set(baseline) != BASELINE_FIELDS:
-            raise ValueError(f"{name} baseline fields differ from schema")
-        if baseline["outcome"] not in OUTCOMES or not baseline["authority_ref"] or not baseline["budget_ref"]:
-            raise ValueError(f"{name} baseline needs outcome, authority, and budget")
-        for field in ("human_active_seconds", "elapsed_seconds", "full_cost"):
-            value = baseline[field]
-            if value is not None and (isinstance(value, bool) or not isinstance(value, (int, float)) or
-                                      not math.isfinite(value) or value < 0):
-                raise ValueError(f"{name}.{field} must be nonnegative or null")
+        if baseline is not None:
+            _validate_baseline(name, baseline)
     for field in METRICS:
         value = record[field]
         if value is not None and (isinstance(value, bool) or not isinstance(value, (int, float)) or
                                   not math.isfinite(value) or value < 0):
             raise ValueError(f"{field} must be nonnegative or null")
-    if record["outcome"] == "accepted_authorized_completion" and (
-            not record["source_ref"] or not record["destination_ref"] or
-            not record["reviewer_id"] or record["boundary_violation"]):
-        raise ValueError("Accepted completion requires evidence and independent review")
-    if record["outcome"] == "correct_refusal" and not record["reviewer_id"]:
-        raise ValueError("Correct refusal requires reviewer")
+    _validate_outcome_evidence(record)
     if record["boundary_violation"] and record["outcome"] != "boundary_failure":
         raise ValueError("Boundary violation must be a boundary failure")
 
@@ -220,20 +227,39 @@ class PilotRegister:
                             (sequence, episode_id, eligible_at, self._intake_hash(sequence, episode_id, eligible_at)))
             return sequence
 
+    def _validate_review_scope(self, result, label):
+        if result["reviewer_id"] == self.operator_id:
+            raise ValueError(f"Operator cannot review own {label.lower()}")
+        if result["reviewer_id"] not in (None, self.reviewer_id):
+            raise ValueError(f"{label} reviewer differs from plan")
+        for field in ("source_ref", "destination_ref"):
+            ref = result[field]
+            if ref is not None and (not isinstance(ref, str) or not ref.startswith("synthetic:")
+                                    or not ref.removeprefix("synthetic:").strip()):
+                raise ValueError("Synthetic register accepts only synthetic evidence references")
+
+    def _validate_baseline_scope(self, baseline):
+        if baseline["authority_ref"] != self.authority_ref or baseline["budget_ref"] != self.budget_ref:
+            raise ValueError("Baseline authority or budget differs from plan")
+        self._validate_review_scope(baseline, "Baseline")
+
+    def _has_matched_baselines(self, record):
+        try:
+            for name in BASELINES:
+                baseline = record["baselines"].get(name)
+                _validate_baseline(name, baseline)
+                self._validate_baseline_scope(baseline)
+        except ValueError:
+            return False
+        return True
+
     def append(self, record):
         self._require_intake()
         validate_episode(record)
-        if record["reviewer_id"] not in (None, self.reviewer_id):
-            raise ValueError("Episode reviewer differs from plan")
-        if record["reviewer_id"] == self.operator_id:
-            raise ValueError("Operator cannot review own episode")
-        for field in ("source_ref", "destination_ref"):
-            if record[field] is not None and not str(record[field]).startswith("synthetic:"):
-                raise ValueError("Synthetic register accepts only synthetic evidence references")
+        self._validate_review_scope(record, "Episode")
         for baseline in record["baselines"].values():
-            if baseline is not None and (baseline["authority_ref"] != self.authority_ref or
-                                         baseline["budget_ref"] != self.budget_ref):
-                raise ValueError("Baseline authority or budget differs from plan")
+            if baseline is not None:
+                self._validate_baseline_scope(baseline)
         with self._write():
             intake = self.db.execute("SELECT * FROM intake WHERE episode_id=?", (record["episode_id"],)).fetchone()
             if intake is None:
@@ -298,6 +324,6 @@ class PilotRegister:
                 "eligible_episodes": eligible, "pending_outcomes": pending,
                 "outcomes": {name: sum(record["outcome"] == name for record in records) for name in OUTCOMES},
                 "all_baseline_slots_filled": chain_valid and pending in (None, 0) and bool(records) and all(
-                    all(record["baselines"][name] is not None for name in BASELINES) for record in records),
+                    self._has_matched_baselines(record) for record in records),
                 "live_acceptance": None, "go_iterate_stop_decision": None,
                 "chain_valid": chain_valid}
