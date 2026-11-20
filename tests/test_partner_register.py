@@ -157,6 +157,60 @@ class PartnerRegisterTests(unittest.TestCase):
         self.assertTrue(demo["summary"]["chain_valid"])
         self.assertTrue(all(row["full_cost"] is None for row in demo["episodes"]))
 
+    def test_matched_baselines_require_the_planned_reviewer_and_synthetic_evidence(self):
+        plan = synthetic_plan()
+        baseline = {"outcome": "accepted_authorized_completion",
+                    "authority_ref": plan["rights_decision_ref"], "budget_ref": plan["budget_ref"],
+                    "reviewer_id": plan["reviewer_id"], "source_ref": "synthetic:source",
+                    "destination_ref": "synthetic:readback", "human_active_seconds": None,
+                    "elapsed_seconds": None, "full_cost": None}
+        record = episode(1, "2026-11-15T12:00:00Z", "setup_failure",
+                         baselines={name: baseline.copy() for name in BASELINES})
+        invalid = (
+            ({"source_ref": None}, "evidence and independent review"),
+            ({"destination_ref": None}, "evidence and independent review"),
+            ({"reviewer_id": None}, "evidence and independent review"),
+            ({"outcome": "correct_refusal", "reviewer_id": None}, "requires reviewer"),
+            ({"reviewer_id": plan["operator_id"]}, "Operator cannot review own baseline"),
+            ({"reviewer_id": "another-reviewer"}, "reviewer differs from plan"),
+            ({"source_ref": "external:source"}, "only synthetic evidence"),
+            ({"destination_ref": "synthetic:"}, "only synthetic evidence"),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "episodes.sqlite"
+            with closing(PilotRegister(path, plan)) as register:
+                register.record_eligible(record["episode_id"], record["eligible_at"])
+                for changes, message in invalid:
+                    with self.subTest(changes=changes):
+                        slots = {**record["baselines"], "native_terminal": {**baseline, **changes}}
+                        with self.assertRaisesRegex(ValueError, message):
+                            register.append({**record, "baselines": slots})
+                        self.assertEqual(register.summary()["pending_outcomes"], 1)
+                self.assertEqual(register.append(record), 1)
+                self.assertTrue(register.summary()["all_baseline_slots_filled"])
+
+    def test_historical_baselines_without_review_remain_readable_but_incomplete(self):
+        plan = synthetic_plan()
+        baseline = {"outcome": "accepted_authorized_completion",
+                    "authority_ref": plan["rights_decision_ref"], "budget_ref": plan["budget_ref"],
+                    "reviewer_id": None, "source_ref": None, "destination_ref": None,
+                    "human_active_seconds": None, "elapsed_seconds": None, "full_cost": None}
+        record = episode(1, "2026-11-15T12:00:00Z", "setup_failure",
+                         baselines={name: baseline.copy() for name in BASELINES})
+        payload = canonical(record)
+        previous = "0" * 64
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "episodes.sqlite"
+            with closing(PilotRegister(path, plan)) as register:
+                register.record_eligible(record["episode_id"], record["eligible_at"])
+            with closing(sqlite3.connect(path)) as db, db:
+                db.execute("INSERT INTO episodes VALUES (1,?,?,?,?)",
+                           (record["episode_id"], payload, previous, sha(previous + payload)))
+            with closing(PilotRegister(path, plan)) as register:
+                self.assertTrue(register.verify_chain())
+                self.assertEqual(register.summary()["pending_outcomes"], 0)
+                self.assertFalse(register.summary()["all_baseline_slots_filled"])
+
 
 if __name__ == "__main__":
     unittest.main()

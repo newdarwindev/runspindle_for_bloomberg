@@ -67,6 +67,11 @@ budget, and reviewer acceptance rule. The [evaluation protocol](../evaluation/pr
 and [cost model](../economics/README.md) define the planned metrics and cost
 denominator.
 
+The synthetic register requires the reviewer named in the plan and both
+synthetic evidence references for an accepted baseline completion. A correct
+baseline refusal requires the reviewer. Existing records stay readable, and
+a comparison with missing baseline evidence is incomplete in the summary.
+
 Interview the operator and economic buyer after the register is locked. Ask
 for recent episodes where the tool saved active work, shifted review/support
 work, failed, correctly stopped, or lost to native software or a conventional
