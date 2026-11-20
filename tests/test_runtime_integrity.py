@@ -5,6 +5,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from contextlib import closing
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -36,7 +37,7 @@ class IntegrityTests(unittest.TestCase):
         self.temp.cleanup()
 
     def alter(self, change):
-        with sqlite3.connect(self.path) as db:
+        with closing(sqlite3.connect(self.path)) as db, db:
             raw = db.execute("SELECT data FROM runs WHERE id=?", (self.run_id,)).fetchone()[0]
             run = json.loads(raw)
             run.update(change)
@@ -49,7 +50,7 @@ class IntegrityTests(unittest.TestCase):
                        max_submissions=2, submissions=-1, lease_until="2099-01-01T00:00:00Z",
                        deadline="2099-01-01T00:00:00Z", destination="other",
                        runtime_version="other", model_version="other", id="other")
-        with sqlite3.connect(self.path) as db:
+        with closing(sqlite3.connect(self.path)) as db:
             original = db.execute("SELECT data FROM runs").fetchone()[0]
             event_count = db.execute("SELECT count(*) FROM events").fetchone()[0]
         script = '''
@@ -67,9 +68,9 @@ for action in [lambda:r.status(sys.argv[2]),lambda:r.submit(sys.argv[2],**identi
                lambda:r.control(sys.argv[2],"cancel",**identity),lambda:r.revoke(sys.argv[2],**identity)]:
  try: action()
  except IntegrityError: blocked+=1
-assert blocked==6,blocked
-assert not r.verify_chain(sys.argv[2])
-assert not r.db.in_transaction
+if blocked != 6: raise AssertionError(f"Blocked {blocked} of 6 operations")
+if r.verify_chain(sys.argv[2]): raise AssertionError("Corrupt snapshot passed verification")
+if r.db.in_transaction: raise AssertionError("Failed read or action left a transaction open")
 r.close()
 '''
         for field, value in changes.items():
@@ -78,13 +79,13 @@ r.close()
                 result = subprocess.run([sys.executable, "-c", script, str(self.path), self.run_id],
                                         cwd=ROOT, capture_output=True, text=True, timeout=10)
                 self.assertEqual(result.returncode, 0, result.stderr)
-                with sqlite3.connect(self.path) as db:
+                with closing(sqlite3.connect(self.path)) as db, db:
                     self.assertEqual(db.execute("SELECT count(*) FROM journal").fetchone()[0], 0)
                     self.assertEqual(db.execute("SELECT count(*) FROM events").fetchone()[0], event_count)
                     db.execute("UPDATE runs SET data=?", (original,))
 
     def test_malformed_snapshot_fails_closed_and_unmodified_run_remains_usable(self):
-        with sqlite3.connect(self.path) as db:
+        with closing(sqlite3.connect(self.path)) as db:
             original = db.execute("SELECT data FROM runs").fetchone()[0]
         for invalid in ("{", "null", "[]"):
             self.runtime.db.execute("UPDATE runs SET data=?", (invalid,))
@@ -103,7 +104,7 @@ r.close()
         # change when the read-before-act integrity fence is removed.
         self.runtime._verify_snapshot = lambda *_: True
         self.runtime.submit(self.run_id, **IDENTITY)
-        with sqlite3.connect(self.path) as db:
+        with closing(sqlite3.connect(self.path)) as db:
             self.assertEqual(db.execute("SELECT count(*) FROM journal").fetchone()[0], 1)
 
     def test_legacy_unsealed_tail_is_not_silently_upgraded(self):
@@ -145,6 +146,6 @@ r.close()
             self.runtime.submit(self.run_id, **IDENTITY)
         self.assertFalse(self.runtime.db.in_transaction)
         self.assertEqual(self.runtime.status(self.run_id), before)
-        with sqlite3.connect(self.path, timeout=0.1) as db:
+        with closing(sqlite3.connect(self.path, timeout=0.1)) as db, db:
             db.execute("BEGIN IMMEDIATE")
             self.assertEqual(db.execute("SELECT count(*) FROM journal").fetchone()[0], 0)
