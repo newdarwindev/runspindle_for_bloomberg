@@ -502,12 +502,17 @@ class Runtime:
         return self.status(run_id)
 
     def quarantine_after_restore(self, run_id, *, actor_id, account_id, session_id):
-        """Manual rollback fence: unknown later effects must be reconciled."""
+        """Fence an open restored run before it can authorize work again."""
         with self._transaction():
             run = self.status(run_id)
             self._identity(run, actor_id, account_id, session_id)
-            if run["state"] not in ("approved", "submitting", "pending_readback", "uncertain"):
-                raise ValueError("Only a possibly effected run can be quarantined")
+            if run["state"] not in ("setup", "preview", "approved", "paused", "takeover",
+                                    "submitting", "pending_readback", "uncertain"):
+                raise ValueError("Restore quarantine requires an open run")
+            # An earlier inactive approval does not identify an effect that
+            # might have happened after this backup. Its event remains sealed.
+            if run["effect_status"] == "none" and run["state"] != "approved":
+                run["operation_id"] = None
             run["state"] = "uncertain"
             run["effect_status"] = "unknown"
             run["approval_actor"] = None

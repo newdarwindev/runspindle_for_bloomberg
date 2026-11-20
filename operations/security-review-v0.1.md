@@ -57,7 +57,7 @@ software tests; no network or real destination was used.
 | Delayed readback | First absence remains unknown; later injected row can confirm without a second submission. | No real delivery-delay distribution measured. |
 | Partial or mismatched delivery | Wrong journal instrument/draft pauses; never accepted. | Manual destination investigation required. |
 | Corrupted run snapshot | `verify_chain` fails after artifact change. | Preserve file and investigate; no external anchor. |
-| Restore older database backup | Explicit `quarantine_after_restore` fences the approved run; absent local readback stays unknown. | Restored DB cannot prove whether a later external effect occurred. Manual external reconciliation is mandatory. |
+| Restore older database backup | Explicit `quarantine_after_restore` fences open runs, including backups from before approval. A missing operation ID leaves the effect unknown without a destination lookup. | Restored DB cannot prove whether a later external effect occurred. Manual external reconciliation is mandatory. |
 | Lease expires during uncertain effect | `revoke` fences new work; bound owner can still read back. | A real incident needs authenticated break-glass and account revocation. |
 
 Synthetic tests use a fixed clock. They verify state and repair path, not
@@ -68,13 +68,14 @@ instrumented pilot runs and an assigned support owner.
 
 1. Stop new submissions and record the run ID, operation ID, account, session,
    actor, and last known state. The bound owner can call `revoke` even after
-   lease expiry. For a restored database, quarantine each possibly effected
-   run before resuming any work.
+   lease expiry. For a restored database, quarantine each open run before
+   resuming any work, even if the backup predates approval.
 2. Preserve a consistent SQLite backup and the event-chain check result.
    Do not edit events or reuse an operation ID to make a test pass.
 3. Read back the destination by operation ID and compare account, instrument,
    and draft hash. An absent or mismatched result remains unresolved; never
-   retry a consequential action merely because a response was lost.
+   retry a consequential action merely because a response was lost. If the
+   backup has no operation ID, recover the binding from independent evidence.
 4. Escalate access, data-rights, credential, or unauthorized-effect incidents
    to the named security/compliance and product owners. Those owners have not
    yet been assigned for a pilot. Revoke live credentials outside this runtime

@@ -81,8 +81,14 @@ inspection and independent reconciliation; migration tooling is still required.
 New synthetic runs can be created in a fresh store. The SQL schema remains 1;
 the event contract change is identified by runtime version 0.3.0. Before changing schema, take a consistent SQLite backup (for example,
 Python `sqlite3.Connection.backup`), migrate a copy, and validate event chains.
-Rollback restores the backup; do not merge later journal effects into an old
-snapshot without reconciliation. A production migration and rollback tool
+After restoring a backup, keep execution stopped and call
+`quarantine_after_restore` with the bound identity for each open run before
+resuming work. A backup taken before approval may omit later submissions.
+Quarantine clears approval and blocks new approval, revision and submission.
+If the backup lacks an operation ID tied to an active approval or possible
+effect, the runtime leaves the effect unknown and makes no destination lookup.
+Use independent destination evidence to reconcile such runs. The restored
+database cannot detect its own age. A production migration and rollback tool
 remain outstanding.
 
 This slice does not authenticate operator identity, source data, or journal
