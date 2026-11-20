@@ -1,0 +1,114 @@
+{
+  "schema_version": 2,
+  "evidence_level": "synthetic_rehearsal_only",
+  "preflight": {
+    "evidence_level": "structural_check_only",
+    "pilot_ready": false,
+    "synthetic_rehearsal_ready": true,
+    "blockers": []
+  },
+  "summary": {
+    "evidence_level": "synthetic_rehearsal_only",
+    "episodes": 3,
+    "eligible_episodes": 3,
+    "pending_outcomes": 0,
+    "outcomes": {
+      "accepted_authorized_completion": 1,
+      "correct_refusal": 1,
+      "unknown_effect": 0,
+      "produced_only": 0,
+      "boundary_failure": 0,
+      "setup_failure": 1,
+      "withdrawn": 0
+    },
+    "all_baseline_slots_filled": false,
+    "live_acceptance": null,
+    "go_iterate_stop_decision": null,
+    "chain_valid": true
+  },
+  "intake": [
+    {
+      "seq": 1,
+      "episode_id": "synthetic-episode-1",
+      "eligible_at": "2026-11-15T12:00:00Z",
+      "row_hash": "c65b88f56b57ab63357040ac7e8ff7e9f946d9bdfa19e433a562a8692fec2920"
+    },
+    {
+      "seq": 2,
+      "episode_id": "synthetic-episode-2",
+      "eligible_at": "2026-11-15T12:05:00Z",
+      "row_hash": "bfd432925961eed79abf4bddc7179ca30580534ba8aedff9dc39b9fda63f8d58"
+    },
+    {
+      "seq": 3,
+      "episode_id": "synthetic-episode-3",
+      "eligible_at": "2026-11-15T12:10:00Z",
+      "row_hash": "48506cc698e83a61b81e5cd2e5be5624269b96ab28fe473ac0eb33622ce80584"
+    }
+  ],
+  "episodes": [
+    {
+      "sequence": 1,
+      "row_hash": "9ca9003cb1ba65340dd2fa8883d7e175044c3864ce51d9dd15b320bfdbfb7ff6",
+      "baselines": {
+        "deterministic_integration": null,
+        "expert_assisted": null,
+        "native_terminal": null
+      },
+      "boundary_violation": false,
+      "destination_ref": "synthetic:readback-1",
+      "elapsed_seconds": null,
+      "eligible_at": "2026-11-15T12:00:00Z",
+      "episode_id": "synthetic-episode-1",
+      "full_cost": null,
+      "human_active_seconds": null,
+      "outcome": "accepted_authorized_completion",
+      "quality_errors": null,
+      "reviewer_id": "synthetic-reviewer",
+      "source_ref": "synthetic:source-1",
+      "support_minutes": null
+    },
+    {
+      "sequence": 2,
+      "row_hash": "06df4480899561bd731da1896aedabd59841b8db0d7c6a5eb0dbe25c01ad19dd",
+      "baselines": {
+        "deterministic_integration": null,
+        "expert_assisted": null,
+        "native_terminal": null
+      },
+      "boundary_violation": false,
+      "destination_ref": null,
+      "elapsed_seconds": null,
+      "eligible_at": "2026-11-15T12:05:00Z",
+      "episode_id": "synthetic-episode-2",
+      "full_cost": null,
+      "human_active_seconds": null,
+      "outcome": "correct_refusal",
+      "quality_errors": null,
+      "reviewer_id": "synthetic-reviewer",
+      "source_ref": "synthetic:source-2",
+      "support_minutes": null
+    },
+    {
+      "sequence": 3,
+      "row_hash": "94411b8a8c058da5a2f2aef75aa06035e708989673fc433628dcfeab4ca1888b",
+      "baselines": {
+        "deterministic_integration": null,
+        "expert_assisted": null,
+        "native_terminal": null
+      },
+      "boundary_violation": false,
+      "destination_ref": null,
+      "elapsed_seconds": null,
+      "eligible_at": "2026-11-15T12:10:00Z",
+      "episode_id": "synthetic-episode-3",
+      "full_cost": null,
+      "human_active_seconds": null,
+      "outcome": "setup_failure",
+      "quality_errors": null,
+      "reviewer_id": null,
+      "source_ref": null,
+      "support_minutes": null
+    }
+  ]
+}

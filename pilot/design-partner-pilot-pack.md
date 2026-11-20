@@ -32,17 +32,22 @@ acceptance criteria change, stop collection and start a new versioned plan.
 ## Episode register
 
 `pilot/partner_register.py` has a local append-only SQLite register for
-**synthetic rehearsal only**. It rejects live mode. Each episode has a unique
-ID, eligibility timestamp, predeclared outcome, source and destination
+**synthetic rehearsal only**. It rejects live mode. Call
+`record_eligible(episode_id, eligible_at)` when a qualifying trigger occurs.
+The append-only intake sequence enforces the frozen period and episode limit,
+including episodes whose outcomes are pending. Append the outcome separately
+using the exact retained episode ID and timestamp. Outcomes can arrive out of
+intake order. Each outcome records source and destination
 references, reviewer ID, boundary flag, human-active time, elapsed time,
 quality errors, full cost, support time, and three baseline slots. Unknown
 metrics remain `null`; they are never treated as zero. Accepted completions
-need source, destination, and reviewer references. The register enforces
-nondecreasing timestamps and a maximum episode count, but cannot prove that
-an eligible episode was not omitted. Reconcile the register against an
-independent intake log during a real pilot.
+need source, destination, and reviewer references. Summary reports show
+registered, reported and pending counts. Version 1 registers open read-only
+and report eligibility and pending counts as unknown. Reconcile the local
+intake against an independent trigger log during a real pilot to check for
+omitted episodes.
 
-The [synthetic demo](register-demo.v1.json) includes a completion, a correct
+The [synthetic demo](register-demo.v2.json) includes a completion, a correct
 refusal, and a setup failure to exercise the schema. Its `evidence_level` is
 `synthetic_rehearsal_only`; `live_acceptance` and the product decision are
 `null`. The references beginning `synthetic:` are placeholders, not verified
