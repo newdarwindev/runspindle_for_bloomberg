@@ -358,10 +358,16 @@ class Runtime:
             self._write(run, "revise_observation", actor_id)
         return self.status(run_id)
 
-    def approve(self, run_id, *, actor_id, account_id, session_id, accepted):
+    def approve(self, run_id, *, actor_id, account_id, session_id, accepted,
+                preview_revision, draft_hash):
+        if (type(accepted) is not bool or type(preview_revision) is not int
+                or type(draft_hash) is not str):
+            raise ValueError("Approval requires a boolean decision and exact preview binding")
         with self._transaction():
             run = self.status(run_id); self._bound(run, actor_id, account_id, session_id)
             if run["state"] != "preview": raise ValueError("Approval requires preview")
+            if (run["revision"], run["draft_hash"]) != (preview_revision, draft_hash):
+                raise ValueError("Approval preview no longer matches the current draft")
             self._source_current(run)
             run["state"] = "approved" if accepted else "paused"
             run["approval_actor"] = actor_id if accepted else None

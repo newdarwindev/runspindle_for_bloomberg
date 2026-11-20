@@ -42,8 +42,9 @@ class SecurityControlTests(unittest.TestCase):
 
     def approved(self):
         run_id = self.create()
-        self.runtime.preview(run_id, **self.identity)
-        self.runtime.approve(run_id, **self.identity, accepted=True)
+        preview = self.runtime.preview(run_id, **self.identity)
+        self.runtime.approve(run_id, **self.identity, accepted=True,
+                             preview_revision=preview["revision"], draft_hash=preview["draft_hash"])
         return run_id
 
     def test_extra_text_and_credentials_are_rejected_before_persistence(self):
@@ -133,7 +134,8 @@ class SecurityControlTests(unittest.TestCase):
         with closing(sqlite3.connect(restored)) as target:
             self.runtime.db.backup(target)
 
-        approved = self.runtime.approve(run_id, **self.identity, accepted=True)
+        approved = self.runtime.approve(run_id, **self.identity, accepted=True,
+                                        preview_revision=preview["revision"], draft_hash=preview["draft_hash"])
         self.runtime.submit(run_id, **self.identity)
         self.runtime.readback(run_id, **self.identity)
 
@@ -150,7 +152,7 @@ from datetime import datetime
 from pathlib import Path
 from pilot.runtime import IntegrityError, Runtime
 
-path, run_id, marker = sys.argv[1:]
+path, run_id, marker, preview_revision, draft_hash = sys.argv[1:]
 clock = lambda: datetime.fromisoformat("2026-11-15T12:00:00+00:00")
 identity = dict(actor_id="operator", account_id="synthetic:desk", session_id="session")
 
@@ -162,7 +164,8 @@ r = Runtime(path, clock=clock, create=False)
 try:
     r.destination.approve = r.destination.execute = r.destination.readback = forbidden
     for action, expected_error in (
-        (lambda: r.approve(run_id, **identity, accepted=True), ValueError),
+        (lambda: r.approve(run_id, **identity, accepted=True,
+                           preview_revision=int(preview_revision), draft_hash=draft_hash), ValueError),
         (lambda: r.submit(run_id, **identity), ValueError),
         (lambda: r.readback(run_id, **identity), IntegrityError),
     ):
@@ -174,7 +177,8 @@ try:
 finally:
     r.close()
 '''
-        result = subprocess.run([sys.executable, "-B", "-c", program, str(restored), run_id, str(marker)],
+        result = subprocess.run([sys.executable, "-B", "-c", program, str(restored), run_id,
+                                 str(marker), str(preview["revision"]), preview["draft_hash"]],
                                 capture_output=True, text=True, timeout=10)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertFalse(marker.exists())
@@ -206,8 +210,9 @@ finally:
         unknown = self.approved()
         self.runtime.submit(unknown, **self.identity, mode="timeout_before_commit")
         declined = self.create()
-        self.runtime.preview(declined, **self.identity)
-        self.runtime.approve(declined, **self.identity, accepted=False)
+        preview = self.runtime.preview(declined, **self.identity)
+        self.runtime.approve(declined, **self.identity, accepted=False,
+                             preview_revision=preview["revision"], draft_hash=preview["draft_hash"])
         counts = summarize(self.path)
         self.assertEqual(counts["queued_operation_count"], 2)
         self.assertEqual(counts["emitted_operation_count"], 2)

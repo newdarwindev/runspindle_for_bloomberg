@@ -7,6 +7,7 @@ import unittest
 from contextlib import closing, contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from unittest.mock import patch
 
 from pilot.runtime import IntegrityError, Runtime
 
@@ -35,8 +36,9 @@ class RuntimeTests(unittest.TestCase):
 
     def approved(self):
         run_id = self.create()
-        self.runtime.preview(run_id, **self.identity)
-        self.runtime.approve(run_id, **self.identity, accepted=True)
+        preview = self.runtime.preview(run_id, **self.identity)
+        self.runtime.approve(run_id, **self.identity, accepted=True,
+                             preview_revision=preview["revision"], draft_hash=preview["draft_hash"])
         return run_id
 
     def test_success_requires_readback_and_chain_is_append_only(self):
@@ -90,8 +92,10 @@ class RuntimeTests(unittest.TestCase):
 
     def test_decline_cancel_and_takeover(self):
         run_id = self.create()
-        self.runtime.preview(run_id, **self.identity)
-        self.assertEqual(self.runtime.approve(run_id, **self.identity, accepted=False)["state"], "paused")
+        preview = self.runtime.preview(run_id, **self.identity)
+        declined = self.runtime.approve(run_id, **self.identity, accepted=False,
+                                        preview_revision=preview["revision"], draft_hash=preview["draft_hash"])
+        self.assertEqual(declined["state"], "paused")
         with self.assertRaises(ValueError):
             self.runtime.submit(run_id, **self.identity)
         other = self.approved()
@@ -113,11 +117,57 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(revised["state"], "setup")
         self.assertIsNone(revised["draft_hash"])
         self.assertNotEqual(revised["artifact_hash"], first["artifact_hash"])
-        self.runtime.preview(run_id, **self.identity)
-        self.runtime.approve(run_id, **self.identity, accepted=True)
+        preview = self.runtime.preview(run_id, **self.identity)
+        self.runtime.approve(run_id, **self.identity, accepted=True,
+                             preview_revision=preview["revision"], draft_hash=preview["draft_hash"])
         self.runtime.submit(run_id, **self.identity)
         with self.assertRaises(ValueError):
             self.runtime.revise(run_id, changed, **self.identity)
+
+    def test_approval_and_decline_require_the_reviewed_preview(self):
+        for current_close in ("48.90", "48.95"):
+            with self.subTest(current_close=current_close):
+                run_id = self.create()
+                first = self.runtime.preview(run_id, **self.identity)
+                with closing(Runtime(self.path, clock=lambda: self.now[0], create=False)) as other:
+                    other.revise(run_id, {**self.observation, "current_close": current_close},
+                                 **self.identity)
+                    replacement = other.preview(run_id, **self.identity)
+                events = self.runtime.events(run_id)
+                self.assertNotEqual(first["revision"], replacement["revision"])
+                self.assertEqual(first["draft_hash"] == replacement["draft_hash"],
+                                 current_close == self.observation["current_close"])
+                destination = self.runtime.destination
+                with patch.object(destination, "approve", wraps=destination.approve) as destination_approve:
+                    for decision, revision, draft_hash in (
+                        (True, first["revision"], first["draft_hash"]),
+                        (False, first["revision"], first["draft_hash"]),
+                        (True, replacement["revision"], "0" * 64),
+                    ):
+                        with self.assertRaisesRegex(ValueError, "preview no longer matches"):
+                            self.runtime.approve(run_id, **self.identity, accepted=decision,
+                                                 preview_revision=revision, draft_hash=draft_hash)
+                    destination_approve.assert_not_called()
+                with self.assertRaises(ValueError):
+                    self.runtime.submit(run_id, **self.identity)
+                self.assertEqual(self.runtime.status(run_id), replacement)
+                self.assertEqual(self.runtime.events(run_id), events)
+
+                approved = self.runtime.approve(run_id, **self.identity, accepted=True,
+                                                preview_revision=replacement["revision"],
+                                                draft_hash=replacement["draft_hash"])
+                self.assertEqual(approved["draft_hash"], replacement["draft_hash"])
+                with closing(sqlite3.connect(self.path)) as observer:
+                    self.assertEqual(observer.execute("SELECT count(*) FROM journal").fetchone(), (0,))
+
+    def test_non_boolean_decision_cannot_approve_a_matching_preview(self):
+        run_id = self.create()
+        preview = self.runtime.preview(run_id, **self.identity)
+        for decision in ("decline", 1, None):
+            with self.subTest(decision=decision), self.assertRaisesRegex(ValueError, "boolean decision"):
+                self.runtime.approve(run_id, **self.identity, accepted=decision,
+                                     preview_revision=preview["revision"], draft_hash=preview["draft_hash"])
+        self.assertEqual(self.runtime.status(run_id), preview)
 
     def test_restart_recovers_interrupted_submission_without_retry(self):
         run_id = self.approved()
