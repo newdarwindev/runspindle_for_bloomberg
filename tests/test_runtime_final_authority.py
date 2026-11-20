@@ -5,6 +5,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from contextlib import closing
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -71,7 +72,7 @@ r.close()
                                              json.dumps(IDENTITY), now[0].isoformat()],
                                             cwd=ROOT, capture_output=True, text=True, timeout=10)
                     self.assertEqual(result.returncode, 0, result.stderr)
-                    with sqlite3.connect(path) as independent:
+                    with closing(sqlite3.connect(path)) as independent:
                         self.assertEqual(independent.execute("SELECT count(*) FROM journal").fetchone()[0], 0)
                         actions = [json.loads(row[0])["action"] for row in
                                    independent.execute("SELECT payload FROM events ORDER BY seq")]
