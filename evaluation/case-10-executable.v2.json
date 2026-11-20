@@ -1,0 +1,128 @@
+{
+  "schema_version": 2,
+  "fixture_id": 10,
+  "source_fixture": "pilot/fixtures/case-10-observation.v1.json",
+  "review_status": "synthetic_arithmetic_only_domain_unreviewed",
+  "expected": {
+    "raw_return": "-0.022",
+    "cash_adjusted_return": "0.002",
+    "decision": "pass"
+  },
+  "scenarios": {
+    "baseline_success": {
+      "outcome": "synthetic_verified",
+      "state": "recorded",
+      "effect_status": "confirmed",
+      "submissions": 1,
+      "journal": "exact",
+      "events": [
+        "create",
+        "preview",
+        "approve",
+        "begin_submission",
+        "adapter_response",
+        "readback_confirmed"
+      ]
+    },
+    "stale_data": {
+      "outcome": "stale"
+    },
+    "missing_data": {
+      "outcome": "missing"
+    },
+    "entitlement_failure": {
+      "outcome": "not_entitled"
+    },
+    "wrong_instrument": {
+      "outcome": "target_mismatch"
+    },
+    "declined_approval": {
+      "outcome": "paused",
+      "state": "paused",
+      "effect_status": "none",
+      "submissions": 0,
+      "journal": "none",
+      "events": [
+        "create",
+        "preview",
+        "decline"
+      ]
+    },
+    "lost_response_before_commit": {
+      "outcome": "unknown_effect",
+      "state": "uncertain",
+      "effect_status": "unknown",
+      "submissions": 1,
+      "journal": "none",
+      "events": [
+        "create",
+        "preview",
+        "approve",
+        "begin_submission",
+        "adapter_timeout",
+        "readback_absent_inconclusive"
+      ]
+    },
+    "lost_response_after_commit": {
+      "outcome": "synthetic_verified",
+      "state": "recorded",
+      "effect_status": "confirmed",
+      "submissions": 1,
+      "journal": "exact",
+      "events": [
+        "create",
+        "preview",
+        "approve",
+        "begin_submission",
+        "adapter_timeout",
+        "readback_confirmed"
+      ]
+    },
+    "duplicate_delivery": {
+      "outcome": "duplicate_rejected",
+      "state": "recorded",
+      "effect_status": "confirmed",
+      "submissions": 1,
+      "journal": "exact",
+      "events": [
+        "create",
+        "preview",
+        "approve",
+        "begin_submission",
+        "adapter_response",
+        "readback_confirmed"
+      ]
+    },
+    "destination_mismatch": {
+      "outcome": "mismatch_paused",
+      "state": "paused",
+      "effect_status": "mismatch",
+      "submissions": 1,
+      "journal": "mismatch",
+      "events": [
+        "create",
+        "preview",
+        "approve",
+        "begin_submission",
+        "adapter_response",
+        "readback_mismatch"
+      ]
+    },
+    "later_mark_revision": {
+      "outcome": "revised_to_pause",
+      "state": "paused",
+      "effect_status": "none",
+      "submissions": 0,
+      "journal": "none",
+      "events": [
+        "create",
+        "preview"
+      ],
+      "draft": {
+        "raw_return": "-0.026",
+        "cash_adjusted_return": "-0.002",
+        "decision": "pause"
+      }
+    }
+  }
+}

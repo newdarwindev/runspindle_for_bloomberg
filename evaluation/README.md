@@ -31,7 +31,7 @@ needs independent review to be labeled correct. Evidence references and review
 labels are supplied by the evaluator, so this script checks their presence; it
 does not authenticate them or independently verify finance calculations.
 
-The [case 10 replay protocol](protocol.v1.md) now adds one executable
+The [case 10 replay protocol](protocol.v2.md) covers one executable
 synthetic fixture, ten negative cases, and a deterministic report. The independent
 verifier checks ledger and simulated journal evidence for every scenario,
 including refusals and unresolved outcomes. The other 39 cases remain unreviewed source prose.

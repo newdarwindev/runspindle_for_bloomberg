@@ -12,7 +12,7 @@ from scripts.replay_case10 import build_report
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = json.loads((ROOT / "pilot/fixtures/case-10-observation.v1.json").read_text())
-PROTOCOL = json.loads((ROOT / "evaluation/case-10-executable.v1.json").read_text())
+PROTOCOL = json.loads((ROOT / "evaluation/case-10-executable.v2.json").read_text())
 NOW = datetime(2026, 11, 15, 12, tzinfo=timezone.utc)
 
 

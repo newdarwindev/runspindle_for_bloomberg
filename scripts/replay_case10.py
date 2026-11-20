@@ -15,8 +15,8 @@ from evaluation.scenario_evidence import snapshot, verify_delta
 from pilot.adapters import ObservationRequest, SyntheticObservationAdapter
 from pilot.runtime import Runtime
 
-PROTOCOL_PATH = ROOT / "evaluation/case-10-executable.v1.json"
-REPORT_PATH = ROOT / "evaluation/replay-report.v1.json"
+PROTOCOL_PATH = ROOT / "evaluation/case-10-executable.v2.json"
+REPORT_PATH = ROOT / "evaluation/replay-report.v2.json"
 PROTOCOL = json.loads(PROTOCOL_PATH.read_text())
 FIXTURE = json.loads((ROOT / PROTOCOL["source_fixture"]).read_text())
 NOW = datetime(2026, 11, 15, 12, tzinfo=timezone.utc)
@@ -151,7 +151,7 @@ def build_report():
 
     if [case["name"] for case in cases] != list(PROTOCOL["scenarios"]):
         raise AssertionError("Replay scenarios differ from frozen protocol")
-    return {"schema_version": 1, "evidence_level": "synthetic_replay_only",
+    return {"schema_version": 2, "evidence_level": "synthetic_replay_only",
             "protocol_sha256": hashlib.sha256(PROTOCOL_PATH.read_bytes()).hexdigest(),
             "source_fixture_sha256": hashlib.sha256((ROOT / PROTOCOL["source_fixture"]).read_bytes()).hexdigest(),
             "case_count": len(cases), "passed": sum(case["passed"] for case in cases),
@@ -160,7 +160,8 @@ def build_report():
 
 
 def main():
-    expected = json.dumps(build_report(), indent=2) + "\n"
+    report = build_report()
+    expected = json.dumps(report, indent=2) + "\n"
     if sys.argv[1:] == ["--check"]:
         if not REPORT_PATH.exists() or REPORT_PATH.read_text() != expected:
             raise SystemExit("Replay report differs; regenerate after reviewing the protocol")
@@ -168,6 +169,8 @@ def main():
     else:
         REPORT_PATH.write_text(expected)
         print(f"Wrote {REPORT_PATH}")
+    if report["passed"] != report["case_count"]:
+        raise SystemExit("One or more replay scenarios failed")
 
 
 if __name__ == "__main__":

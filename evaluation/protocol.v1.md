@@ -13,19 +13,9 @@ The fixed cohort is one synthetic baseline and the ten named negative cases
 in the case 10 protocol: stale or missing data, wrong instrument, entitlement
 failure, declined approval, lost responses before and after commit, duplicate
 delivery, destination mismatch, and later mark revision. Run all cases in
-the listed order in the executable protocol. The protocol fixes each outcome,
-event sequence, submission count and journal expectation before execution.
-Do not drop failures or replay a consequential effect to improve a rate.
-The only simulated external effect is a local paper journal row with a unique
-operation ID.
-
-Each scenario is bracketed by read-only, consistent SQLite snapshots from a
-separate connection. Blocked observations must leave no run, event, or journal
-record. Started cases must write only the expected run, chain, and journal
-entries. Prior states and effects must stay unchanged. The verifier binds each
-journal row to its run and checks the actual journal timestamp against source
-freshness, the lease, and the deadline. Simulated refusal and mismatch labels
-alone cannot pass.
+the listed order. Do not drop failures or replay a consequential effect to
+improve a rate. The only simulated external effect is a local paper journal
+row with a unique operation ID.
 
 `synthetic_verified` means the separate read-only verifier recomputed the
 arithmetic and checked the source fixture, hashes, event order, approval,
