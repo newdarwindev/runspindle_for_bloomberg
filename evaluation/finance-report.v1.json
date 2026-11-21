@@ -3,13 +3,13 @@
   "evidence_level": "synthetic_finance_only",
   "source_csv_sha256": "7f746cf3a0a8fb90c8d680704f13ee3a7ef87a3bd7604a97c5917abbd2a37a57",
   "fixture_sha256": "116cb4ae732a7e24cd71358aa5c4d25cf0ab38a494f8707c03e5431c50128aaf",
-  "expected_sha256": "246cde27d1c636fc9aba5e23ee2b8ae153f305c2ef8c05ffc9d675e5b2ac475d",
-  "protocol_sha256": "2d2c81826b6249232e743a8c4a4d4a62168a757ea8aedddf58b22b68f745bc30",
+  "expected_sha256": "ad41fca1bc18102752f2fed429d84fb207dd0e054cdf496d97deff1b365d4272",
+  "protocol_sha256": "cebe3693c40eda63fdb95a9ef44b7e6c4a5d2ce70bccb623677a3edb1dde7e03",
   "software": {
     "model": null,
-    "runner_sha256": "23264369d09b416f7f34362f3bba3c1d6ff44624320a26cb4e435c78fca0d498",
+    "runner_sha256": "1847c9068ce6cea80197194ea5963cd6d3c5b56e6f298024711dd5f8500ff8b4",
     "evaluator_sha256": "65d194b0218dc3f0367c130034e66e7210f634cf4280bafd40bab32e0438a336",
-    "verifier_sha256": "35e58346f9b2aa9617002d5d0157ca8626a492081614bbc08d8f85dd623e0f11"
+    "verifier_sha256": "1931d668a058909e6d3d5c493df9919952d8259e1b6b425d64160f1aa9a04e17"
   },
   "holdout_families": [
     "fx",
@@ -18,6 +18,7 @@
   ],
   "baseline_count": 40,
   "adverse_count": 128,
+  "rule_scenario_count": 20,
   "domain_review": "not_run",
   "measurement": {
     "accepted_authorized_completion": null,
@@ -610,6 +611,34 @@
           ],
           "metrics": {}
         }
+      },
+      "rule_scenarios": {
+        "clears_rule": {
+          "input_changes": {
+            "preset_threshold": "1.20"
+          },
+          "result": {
+            "decision": "stage_paper",
+            "reasons": [],
+            "metrics": {
+              "entry_spread_usd_bbl": "1.30",
+              "short_spread_pnl_usd_bbl": "0.40"
+            }
+          }
+        },
+        "misses_rule": {
+          "input_changes": {
+            "preset_threshold": "1.30"
+          },
+          "result": {
+            "decision": "pass",
+            "reasons": [],
+            "metrics": {
+              "entry_spread_usd_bbl": "1.30",
+              "short_spread_pnl_usd_bbl": "0.40"
+            }
+          }
+        }
       }
     },
     {
@@ -697,6 +726,38 @@
           ],
           "metrics": {}
         }
+      },
+      "rule_scenarios": {
+        "clears_rule": {
+          "input_changes": {
+            "thesis_clears_break_even": "1"
+          },
+          "result": {
+            "decision": "stage_paper",
+            "reasons": [],
+            "metrics": {
+              "lower_break_even": "94",
+              "upper_break_even": "106",
+              "pnl_high": "2",
+              "pnl_mid": "-3"
+            }
+          }
+        },
+        "misses_rule": {
+          "input_changes": {
+            "thesis_clears_break_even": "0"
+          },
+          "result": {
+            "decision": "pass",
+            "reasons": [],
+            "metrics": {
+              "lower_break_even": "94",
+              "upper_break_even": "106",
+              "pnl_high": "2",
+              "pnl_mid": "-3"
+            }
+          }
+        }
       }
     },
     {
@@ -739,6 +800,36 @@
             "settlement_value_date_matches"
           ],
           "metrics": {}
+        }
+      },
+      "rule_scenarios": {
+        "clears_rule": {
+          "input_changes": {
+            "thesis_usd_per_eur": "1.1110",
+            "extra_hurdle_usd_per_eur": ".0050"
+          },
+          "result": {
+            "decision": "stage_paper",
+            "reasons": [],
+            "metrics": {
+              "forward_premium_usd_per_eur": "0.0050",
+              "pnl_usd": "700.0000"
+            }
+          }
+        },
+        "misses_rule": {
+          "input_changes": {
+            "thesis_usd_per_eur": "1.1100",
+            "extra_hurdle_usd_per_eur": ".0050"
+          },
+          "result": {
+            "decision": "pass",
+            "reasons": [],
+            "metrics": {
+              "forward_premium_usd_per_eur": "0.0050",
+              "pnl_usd": "700.0000"
+            }
+          }
         }
       }
     },
@@ -992,6 +1083,38 @@
           ],
           "metrics": {}
         }
+      },
+      "rule_scenarios": {
+        "clears_rule": {
+          "input_changes": {
+            "downside_thesis_clears": "1"
+          },
+          "result": {
+            "decision": "stage_paper",
+            "reasons": [],
+            "metrics": {
+              "skew_pct_points": "8",
+              "lower_break_even": "98",
+              "expiry_pnl": "3",
+              "loss_at_or_above_long_strike": "-2"
+            }
+          }
+        },
+        "misses_rule": {
+          "input_changes": {
+            "downside_thesis_clears": "0"
+          },
+          "result": {
+            "decision": "pass",
+            "reasons": [],
+            "metrics": {
+              "skew_pct_points": "8",
+              "lower_break_even": "98",
+              "expiry_pnl": "3",
+              "loss_at_or_above_long_strike": "-2"
+            }
+          }
+        }
       }
     },
     {
@@ -1036,6 +1159,36 @@
             "monthly_day_weights_match"
           ],
           "metrics": {}
+        }
+      },
+      "rule_scenarios": {
+        "clears_rule": {
+          "input_changes": {
+            "min_difference": ".049"
+          },
+          "result": {
+            "decision": "stage_paper",
+            "reasons": [],
+            "metrics": {
+              "monthly_avg_pct": "4.375",
+              "implied_settlement": "95.625",
+              "paper_pnl_points": "0.050"
+            }
+          }
+        },
+        "misses_rule": {
+          "input_changes": {
+            "min_difference": ".050"
+          },
+          "result": {
+            "decision": "pass",
+            "reasons": [],
+            "metrics": {
+              "monthly_avg_pct": "4.375",
+              "implied_settlement": "95.625",
+              "paper_pnl_points": "0.050"
+            }
+          }
         }
       }
     },
@@ -1219,6 +1372,36 @@
           ],
           "metrics": {}
         }
+      },
+      "rule_scenarios": {
+        "clears_rule": {
+          "input_changes": {
+            "quote_hurdle_usd": "2.19"
+          },
+          "result": {
+            "decision": "stage_paper",
+            "reasons": [],
+            "metrics": {
+              "parity_usd": "55.00",
+              "premium_usd": "2.20",
+              "pnl_usd_adr": "1.70"
+            }
+          }
+        },
+        "misses_rule": {
+          "input_changes": {
+            "quote_hurdle_usd": "2.20"
+          },
+          "result": {
+            "decision": "pass",
+            "reasons": [],
+            "metrics": {
+              "parity_usd": "55.00",
+              "premium_usd": "2.20",
+              "pnl_usd_adr": "1.70"
+            }
+          }
+        }
       }
     },
     {
@@ -1384,6 +1567,34 @@
           ],
           "metrics": {}
         }
+      },
+      "rule_scenarios": {
+        "clears_rule": {
+          "input_changes": {
+            "price_confirmed": "1"
+          },
+          "result": {
+            "decision": "stage_paper",
+            "reasons": [],
+            "metrics": {
+              "net_position_change": "-20000",
+              "pnl_usd_lb": "0.05"
+            }
+          }
+        },
+        "misses_rule": {
+          "input_changes": {
+            "price_confirmed": "0"
+          },
+          "result": {
+            "decision": "pass",
+            "reasons": [],
+            "metrics": {
+              "net_position_change": "-20000",
+              "pnl_usd_lb": "0.05"
+            }
+          }
+        }
       }
     },
     {
@@ -1470,6 +1681,34 @@
           ],
           "metrics": {}
         }
+      },
+      "rule_scenarios": {
+        "clears_rule": {
+          "input_changes": {
+            "tail_floor_bps": "3"
+          },
+          "result": {
+            "decision": "stage_paper",
+            "reasons": [],
+            "metrics": {
+              "auction_tail_bps": "3.00",
+              "clean_short_pnl_per_100": "0.21875"
+            }
+          }
+        },
+        "misses_rule": {
+          "input_changes": {
+            "tail_floor_bps": "4"
+          },
+          "result": {
+            "decision": "pass",
+            "reasons": [],
+            "metrics": {
+              "auction_tail_bps": "3.00",
+              "clean_short_pnl_per_100": "0.21875"
+            }
+          }
+        }
       }
     },
     {
@@ -1514,6 +1753,36 @@
             "subscription_ratio_matches"
           ],
           "metrics": {}
+        }
+      },
+      "rule_scenarios": {
+        "clears_rule": {
+          "input_changes": {
+            "cost_hurdle": ".39"
+          },
+          "result": {
+            "decision": "stage_paper",
+            "reasons": [],
+            "metrics": {
+              "modeled_cost_per_share": "14.60",
+              "current_discount_usd": "0.40",
+              "modeled_gain_usd": "0.30"
+            }
+          }
+        },
+        "misses_rule": {
+          "input_changes": {
+            "cost_hurdle": ".40"
+          },
+          "result": {
+            "decision": "pass",
+            "reasons": [],
+            "metrics": {
+              "modeled_cost_per_share": "14.60",
+              "current_discount_usd": "0.40",
+              "modeled_gain_usd": "0.30"
+            }
+          }
         }
       }
     },
@@ -1731,6 +2000,34 @@
             "comparable_session_length"
           ],
           "metrics": {}
+        }
+      },
+      "rule_scenarios": {
+        "clears_rule": {
+          "input_changes": {
+            "trigger_cleared": "1"
+          },
+          "result": {
+            "decision": "stage_paper",
+            "reasons": [],
+            "metrics": {
+              "relative_volume": "2",
+              "pnl_usd_share": "0.80"
+            }
+          }
+        },
+        "misses_rule": {
+          "input_changes": {
+            "trigger_cleared": "0"
+          },
+          "result": {
+            "decision": "pass",
+            "reasons": [],
+            "metrics": {
+              "relative_volume": "2",
+              "pnl_usd_share": "0.80"
+            }
+          }
         }
       }
     },

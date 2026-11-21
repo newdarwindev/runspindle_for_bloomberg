@@ -1,6 +1,8 @@
 """Validate finance replay output against the separately authored expectation sheet."""
 from fractions import Fraction
 
+RULE_DECISIONS = {"clears_rule": "stage_paper", "misses_rule": "pass"}
+
 
 def _same_metrics(actual, expected):
     if type(actual) is not dict or actual.keys() != expected.keys():
@@ -21,6 +23,25 @@ def _compare(result, target):
     if not _same_metrics(result["metrics"], target["metrics"]):
         errors.append("computed metrics differ from frozen expectation")
     return errors
+
+
+def _verify_rule_scenarios(case, expected, observed):
+    scenarios = expected.get("rule_scenarios", {})
+    missing = {name for name, value in case["inputs"].items() if value is None}
+    required = RULE_DECISIONS.keys() if missing else set()
+    if scenarios.keys() != required or observed.keys() != required:
+        raise ValueError(f"decision rule scenario coverage differs for case {case['id']}")
+    failures = []
+    for name, overrides in scenarios.items():
+        if overrides.keys() != missing or any(type(value) is not str for value in overrides.values()):
+            raise ValueError(f"decision rule inputs differ for case {case['id']}")
+        result = observed[name]
+        if result["input_changes"] != overrides:
+            raise ValueError(f"reported decision rule inputs differ for case {case['id']}")
+        target = {"decision": RULE_DECISIONS[name], "reasons": [], "metrics": expected["metrics"]}
+        for message in _compare(result["result"], target):
+            failures.append({"id": case["id"], "scenario": name, "message": message})
+    return failures
 
 
 def verify(fixtures, oracle, results):
@@ -55,4 +76,5 @@ def verify(fixtures, oracle, results):
             target = {"decision": "pause", "reasons": [check], "metrics": {}}
             for message in _compare(result, target):
                 failures.append({"id": case_id, "scenario": check, "message": message})
+        failures.extend(_verify_rule_scenarios(case, expected, row.get("rule_scenarios", {})))
     return failures

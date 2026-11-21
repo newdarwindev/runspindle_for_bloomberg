@@ -19,8 +19,9 @@ The [synthetic finance protocol](finance-protocol.v1.md) adds normalized inputs,
 decision rules, a separately authored answer sheet, and a reproducible report
 for all 40 cases. Run `python3 scripts/replay_finance.py --check` to verify the
 calculations and case-specific pauses against the frozen expectations. The
-source catalog remains the provenance record. Case 10 alone has a durable
-operational replay covering authority and journal readback.
+report also checks both decision branches for the ten cases whose baseline
+rules are missing. The source catalog remains the provenance record. Case 10
+has a durable operational replay covering authority and journal readback.
 
 ## Run classification
 
