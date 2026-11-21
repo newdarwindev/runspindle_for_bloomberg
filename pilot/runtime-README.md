@@ -75,6 +75,11 @@ before any further decision. The schema version is 1. Unknown versions fail
 closed. Opening checks the v1 tables and both append-only triggers under one
 SQLite transaction. A missing journal, changed trigger, or missing or duplicated
 version marker blocks opening before the destination adapter is constructed.
+Existing connections verify the same schema before each new ledger read or write
+transaction. If schema drift occurs after submission intent commits, the final
+transaction stops before calling the destination. The interrupted intent stays
+retained for reconciliation. Status, events and readback also withhold results
+from the changed schema.
 The runtime creates a schema and its version marker in one transaction when
 opening an empty store with creation enabled. The inspection CLI always opens
 an existing store. Supported existing v1 stores preserve their schema and data.

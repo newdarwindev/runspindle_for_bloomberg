@@ -1,5 +1,6 @@
 """Synthetic ledger initialization and reopening over actual SQLite files."""
 
+import json
 import sqlite3
 import subprocess
 import sys
@@ -9,6 +10,7 @@ from concurrent.futures import ThreadPoolExecutor
 from contextlib import closing
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from unittest.mock import patch
 
 from pilot.runtime import IntegrityError, Runtime
 
@@ -61,29 +63,33 @@ class RuntimeSchemaTests(unittest.TestCase):
                 "SELECT type,name,sql FROM sqlite_schema ORDER BY name"
             ).fetchall()
 
+    def approved(self, runtime):
+        run = runtime.create(
+            **IDENTITY,
+            instrument_id="SYNTH-CASE-10",
+            observation=dict(
+                instrument_id="SYNTH-CASE-10",
+                prior_date="2026-11-13",
+                current_date="2026-11-14",
+                source_timestamp="2026-11-15T11:00:00Z",
+                prior_close="50",
+                current_close="48.9",
+                cash_dividend="1.2",
+                entitled=True,
+                fresh=True,
+                no_other_corporate_action=True,
+            ),
+            lease_until=(NOW + timedelta(hours=1)).isoformat(),
+            deadline=(NOW + timedelta(minutes=30)).isoformat(),
+        )
+        preview = runtime.preview(run, **IDENTITY)
+        runtime.approve(run, **IDENTITY, accepted=True,
+                        preview_revision=preview["revision"], draft_hash=preview["draft_hash"])
+        return run
+
     def submitted(self):
         with closing(Runtime(self.path, clock=lambda: NOW)) as runtime:
-            run = runtime.create(
-                **IDENTITY,
-                instrument_id="SYNTH-CASE-10",
-                observation=dict(
-                    instrument_id="SYNTH-CASE-10",
-                    prior_date="2026-11-13",
-                    current_date="2026-11-14",
-                    source_timestamp="2026-11-15T11:00:00Z",
-                    prior_close="50",
-                    current_close="48.9",
-                    cash_dividend="1.2",
-                    entitled=True,
-                    fresh=True,
-                    no_other_corporate_action=True,
-                ),
-                lease_until=(NOW + timedelta(hours=1)).isoformat(),
-                deadline=(NOW + timedelta(minutes=30)).isoformat(),
-            )
-            preview = runtime.preview(run, **IDENTITY)
-            runtime.approve(run, **IDENTITY, accepted=True,
-                            preview_revision=preview["revision"], draft_hash=preview["draft_hash"])
+            run = self.approved(runtime)
             runtime.submit(run, **IDENTITY, mode="timeout_after_commit")
             return run
 
@@ -161,6 +167,58 @@ sys.exit("corrupt ledger opened")
                     Runtime(self.path)
                 self.assertEqual(self.path.read_bytes(), prior)
                 self.path.unlink()
+
+    def test_schema_drift_after_intent_prevents_destination_execution(self):
+        with closing(Runtime(self.path, clock=lambda: NOW)) as runtime:
+            run = self.approved(runtime)
+            begins = 0
+
+            def drop_guard_before_effect(statement):
+                nonlocal begins
+                if statement == "BEGIN IMMEDIATE":
+                    begins += 1
+                    if begins == 2:
+                        with closing(sqlite3.connect(self.path)) as db, db:
+                            db.execute("DROP TRIGGER events_no_delete")
+
+            runtime.db.set_trace_callback(drop_guard_before_effect)
+            try:
+                with patch.object(runtime.destination, "execute", wraps=runtime.destination.execute) as execute:
+                    with self.assertRaises(IntegrityError):
+                        runtime.submit(run, **IDENTITY)
+                    execute.assert_not_called()
+            finally:
+                runtime.db.set_trace_callback(None)
+        self.assertEqual(begins, 2)
+        with closing(sqlite3.connect(self.path)) as db:
+            self.assertEqual(db.execute("SELECT count(*) FROM journal").fetchone(), (0,))
+            stored = json.loads(db.execute("SELECT data FROM runs").fetchone()[0])
+            self.assertEqual((stored["state"], stored["submissions"]), ("submitting", 1))
+            actions = [
+                json.loads(payload)["action"]
+                for (payload,) in db.execute("SELECT payload FROM events ORDER BY seq")
+            ]
+            self.assertEqual(actions[-1], "begin_submission")
+            self.assertNotIn("events_no_delete", {name for _, name, _ in self.inventory()})
+
+    def test_open_connection_rejects_readback_and_observation_after_schema_drift(self):
+        run = self.submitted()
+        with closing(Runtime(self.path, clock=lambda: NOW, create=False)) as runtime:
+            with closing(sqlite3.connect(self.path)) as db, db:
+                db.execute("UPDATE schema_meta SET version=99")
+                history = db.execute("SELECT * FROM events ORDER BY seq").fetchall()
+            with patch.object(runtime.destination, "readback", wraps=runtime.destination.readback) as read:
+                with self.assertRaises(IntegrityError):
+                    runtime.readback(run, **IDENTITY)
+                read.assert_not_called()
+            for observe in (runtime.status, runtime.events):
+                with self.assertRaises(IntegrityError):
+                    observe(run)
+            self.assertFalse(runtime.verify_chain(run))
+            self.assertFalse(runtime.db.in_transaction)
+        with closing(sqlite3.connect(self.path)) as db:
+            self.assertEqual(db.execute("SELECT * FROM events ORDER BY seq").fetchall(), history)
+            self.assertEqual(db.execute("SELECT version FROM schema_meta").fetchall(), [(99,)])
 
     def test_reopen_and_inspection_cannot_bootstrap_a_missing_or_empty_store(self):
         with self.assertRaises(sqlite3.OperationalError):
