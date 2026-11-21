@@ -114,9 +114,13 @@ r.close()
         payload = json.loads(event["payload"])
         del payload["snapshot_sha256"]
         payload = canonical(payload)
+        trigger = self.runtime.db.execute(
+            "SELECT sql FROM sqlite_schema WHERE type='trigger' AND name='events_no_update'"
+        ).fetchone()[0]
         self.runtime.db.execute("DROP TRIGGER events_no_update")
         self.runtime.db.execute("UPDATE events SET payload=?,event_hash=? WHERE seq=?",
                                 (payload, digest(event["prev_hash"] + payload), event["seq"]))
+        self.runtime.db.execute(trigger)
         self.assertFalse(self.runtime.verify_chain(self.run_id))
         with self.assertRaises(IntegrityError):
             self.runtime.recover(self.run_id, **IDENTITY)

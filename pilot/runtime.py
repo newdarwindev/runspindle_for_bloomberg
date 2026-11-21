@@ -172,7 +172,7 @@ class Runtime:
     def _schema(self, *, create):
         # The inventory and version are checked under the same lock as first
         # initialization. A partial schema cannot acquire a fresh journal.
-        with self._transaction():
+        with self._transaction(check_schema=False):
             objects = schema_objects(self.db)
             if not objects and create:
                 for sql in SCHEMA_OBJECTS.values():
@@ -182,9 +182,11 @@ class Runtime:
             verify_schema(self.db, objects)
 
     @contextmanager
-    def _transaction(self):
+    def _transaction(self, *, check_schema=True):
         self.db.execute("BEGIN IMMEDIATE")
         try:
+            if check_schema:
+                verify_schema(self.db, schema_objects(self.db))
             yield
             self.db.execute("COMMIT")
         except BaseException:
@@ -200,6 +202,8 @@ class Runtime:
         if owned:
             self.db.execute("BEGIN")
         try:
+            if owned:
+                verify_schema(self.db, schema_objects(self.db))
             yield
         finally:
             if owned:
@@ -222,7 +226,8 @@ class Runtime:
             return self._snapshot(run_id)
 
     def events(self, run_id):
-        return run_events(self.db, run_id)
+        with self._consistent_read():
+            return run_events(self.db, run_id)
 
     def verify_chain(self, run_id):
         try:
