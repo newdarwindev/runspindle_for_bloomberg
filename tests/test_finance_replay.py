@@ -19,6 +19,7 @@ class FinanceReplayTests(unittest.TestCase):
         self.assertEqual(self.report, load(REPORT))
         self.assertEqual(self.report["baseline_count"], 40)
         self.assertEqual(self.report["adverse_count"], 128)
+        self.assertEqual(self.report["rule_scenario_count"], 20)
         self.assertEqual(self.report["failures"], [])
         family_splits = {}
         for row in self.report["cases"]:
@@ -90,6 +91,36 @@ class FinanceReplayTests(unittest.TestCase):
         self.assertEqual(replay(oil, check_changes={"same_day_settlements": None}), {
             "decision": "pause", "reasons": ["same_day_settlements"], "metrics": {},
         })
+
+    def test_rule_scenarios_detect_boundary_operator_changes(self):
+        for case_id, operator, failing_scenario in (
+            (13, "ge", "misses_rule"),
+            (33, "gt", "clears_rule"),
+        ):
+            with self.subTest(case_id=case_id):
+                changed = copy.deepcopy(self.fixtures)
+                changed["cases"][case_id - 1]["when"][0] = operator
+                report = build_report(changed, self.oracle, self.source)
+                self.assertEqual(report["failures"], [{
+                    "id": case_id, "scenario": failing_scenario,
+                    "message": "decision or pause reason differs from frozen expectation",
+                }])
+
+    def test_rule_scenarios_require_frozen_coverage_and_input_values(self):
+        rows = copy.deepcopy(self.report["cases"])
+        decisions = rows[12]["rule_scenarios"]
+        decisions["misses_rule"]["input_changes"] = {"preset_threshold": "1.29"}
+        with self.assertRaisesRegex(ValueError, "reported decision rule inputs differ for case 13"):
+            verify(self.fixtures, self.oracle, rows)
+
+        decisions.pop("misses_rule")
+        with self.assertRaisesRegex(ValueError, "decision rule scenario coverage differs for case 13"):
+            verify(self.fixtures, self.oracle, rows)
+
+        oracle = copy.deepcopy(self.oracle)
+        oracle["cases"][12].pop("rule_scenarios")
+        with self.assertRaisesRegex(ValueError, "decision rule scenario coverage differs for case 13"):
+            build_report(self.fixtures, oracle, self.source)
 
     def test_evaluator_rejects_unknown_operations_and_nonfinite_values(self):
         with self.assertRaises(ValueError):

@@ -33,16 +33,24 @@ def build_report(fixtures, oracle, source):
     if not holdout < families or not holdout:
         raise ValueError("holdout must name a proper subset of the case families")
     source_by_id = {case["id"]: case for case in source["fixtures"]}
+    expected_by_id = {case["id"]: case for case in oracle["cases"]}
     results = []
     for case in cases:
         origin = source_by_id[case["id"]]
         baseline = replay(case)
         adverse = {check: replay(case, check_changes={check: False}) for check in case["checks"]}
-        results.append(dict(
+        scenarios = expected_by_id[case["id"]].get("rule_scenarios", {})
+        row = dict(
             id=case["id"], name=origin["name"], family=case["family"],
             split="holdout" if case["family"] in holdout else "development",
             source_urls=origin["source_urls"], baseline=baseline, adverse=adverse,
-        ))
+        )
+        if scenarios:
+            row["rule_scenarios"] = {
+                name: {"input_changes": changes, "result": replay(case, input_changes=changes)}
+                for name, changes in scenarios.items()
+            }
+        results.append(row)
     failures = verify(fixtures, oracle, results)
     return {
         "schema_version": 1,
@@ -60,6 +68,7 @@ def build_report(fixtures, oracle, source):
         "holdout_families": fixtures["holdout_families"],
         "baseline_count": len(results),
         "adverse_count": sum(len(row["adverse"]) for row in results),
+        "rule_scenario_count": sum(len(row.get("rule_scenarios", {})) for row in results),
         "domain_review": "not_run",
         "measurement": {
             "accepted_authorized_completion": None, "correct_refusal": None,
@@ -88,7 +97,8 @@ def main():
         raise SystemExit("Synthetic replay differs from expected results")
     if options.check and (not REPORT.exists() or REPORT.read_text(encoding="utf-8") != encoded):
         raise SystemExit("Synthetic finance report differs from committed result")
-    print(f"Verified {report['baseline_count']} baseline calculations and {report['adverse_count']} adverse checks")
+    print(f"Verified {report['baseline_count']} baseline calculations, {report['adverse_count']} adverse checks, "
+          f"and {report['rule_scenario_count']} decision rule scenarios")
 
 
 if __name__ == "__main__":

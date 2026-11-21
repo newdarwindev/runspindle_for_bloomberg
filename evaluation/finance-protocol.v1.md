@@ -20,6 +20,16 @@ false. A false or unknown check pauses before calculation. If the named
 decision threshold is missing, the run pauses without discarding arithmetic
 that was already verified. An unavailable rule or value is never zero.
 
+For each of the ten cases whose baseline decision rules are absent, the
+expectation sheet freezes two additional synthetic inputs. The
+`clears_rule` scenario expects `stage_paper` and the `misses_rule` scenario
+expects `pass`. These inputs fill only the missing rule fields. Both
+scenarios must retain the same independently verified metrics as the baseline
+because they use the same synthetic observations. For strict comparisons,
+the missed case uses exact equality. For the inclusive auction-tail floor,
+the cleared case uses exact equality. The verifier requires both scenarios
+and the exact recorded inputs for every affected case.
+
 `stage_draft` and `stage_paper` describe hypothetical fixture decisions.
 `pass` means pass on the opportunity in the source examples. `review` and
 `review_bond_b` describe further investigation. None of these outcomes is
