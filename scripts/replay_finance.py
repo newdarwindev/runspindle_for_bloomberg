@@ -43,7 +43,7 @@ def build_report(fixtures, oracle, source):
             split="holdout" if case["family"] in holdout else "development",
             source_urls=origin["source_urls"], baseline=baseline, adverse=adverse,
         ))
-    failures = verify(cases, oracle["cases"], results)
+    failures = verify(fixtures, oracle, results)
     return {
         "schema_version": 1,
         "evidence_level": "synthetic_finance_only",

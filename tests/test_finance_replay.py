@@ -41,9 +41,42 @@ class FinanceReplayTests(unittest.TestCase):
     def test_oracle_rejects_computation_after_blocked_evidence(self):
         rows = copy.deepcopy(self.report["cases"])
         rows[0]["adverse"]["exact_delivery_month"]["metrics"]["quote_usd"] = "70800"
-        errors = verify(self.fixtures["cases"], self.oracle["cases"], rows)
+        errors = verify(self.fixtures, self.oracle, rows)
         self.assertEqual(errors[0]["scenario"], "exact_delivery_month")
         self.assertEqual(len(errors), 1)
+
+    def test_fixture_cannot_remove_or_rename_a_required_adverse_check(self):
+        for replacement in (None, "different_delivery_month"):
+            with self.subTest(replacement=replacement):
+                changed = copy.deepcopy(self.fixtures)
+                checks = changed["cases"][0]["checks"]
+                outcome = checks.pop("exact_delivery_month")
+                if replacement is not None:
+                    checks[replacement] = outcome
+                with self.assertRaisesRegex(ValueError, "required checks.*case 1"):
+                    build_report(changed, self.oracle, self.source)
+
+    def test_moving_holdout_case_or_family_is_rejected_before_reporting(self):
+        moved_case = copy.deepcopy(self.fixtures)
+        moved_case["cases"][4]["family"] = "credit"
+        with self.assertRaisesRegex(ValueError, "family.*case 5"):
+            build_report(moved_case, self.oracle, self.source)
+
+        moved_family = copy.deepcopy(self.fixtures)
+        moved_family["holdout_families"].remove("fx")
+        with self.assertRaisesRegex(ValueError, "holdout families"):
+            build_report(moved_family, self.oracle, self.source)
+
+    def test_oracle_rejects_report_split_and_adverse_coverage_drift(self):
+        rows = copy.deepcopy(self.report["cases"])
+        rows[4]["split"] = "development"
+        with self.assertRaisesRegex(ValueError, "split.*case 5"):
+            verify(self.fixtures, self.oracle, rows)
+
+        rows = copy.deepcopy(self.report["cases"])
+        rows[0]["adverse"].pop("exact_delivery_month")
+        with self.assertRaisesRegex(ValueError, "adverse checks.*case 1"):
+            verify(self.fixtures, self.oracle, rows)
 
     def test_missing_threshold_does_not_become_zero(self):
         oil = self.fixtures["cases"][12]

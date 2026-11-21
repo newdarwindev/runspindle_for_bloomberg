@@ -1,243 +1,324 @@
 {
   "schema_version": 1,
   "evidence_level": "manually_transcribed_synthetic_expectations",
+  "holdout_families": ["fx", "rates", "options"],
   "cases": [
     {
       "id": 1,
+      "family": "procurement",
+      "required_checks": ["exact_delivery_month", "official_settlement", "holds_cover_bid_deadline", "matched_quantities"],
       "decision": "stage_draft",
       "reasons": [],
       "metrics": {"quote_usd": "70800", "supplier_cost_usd": "69900", "gross_margin_usd": "900"}
     },
     {
       "id": 2,
+      "family": "procurement",
+      "required_checks": ["part_matches", "lot_manufacturer_verified", "independent_approved_manufacturer"],
       "decision": "stage_draft",
       "reasons": [],
       "metrics": {"incremental_margin_usd": "450"}
     },
     {
       "id": 3,
+      "family": "credit",
+      "required_checks": ["exact_issuing_legal_entity", "rating_scale_matches", "replacement_offer_matched"],
       "decision": "stage_draft",
       "reasons": [],
       "metrics": {"below_required_notches": "1", "fee_to_verify_usd": "1200"}
     },
     {
       "id": 4,
+      "family": "credit",
+      "required_checks": ["exact_bond", "score_from_valuation", "valid_firm_bid", "accrued_interest_treatment_matches"],
       "decision": "stage_draft",
       "reasons": [],
       "metrics": {"reserve_clean_points": "92.12", "bid_excess_points": ".88"}
     },
     {
       "id": 5,
+      "family": "fx",
+      "required_checks": ["contract_fix_time_matches", "one_settlement_date", "deductions_reconciled", "quote_direction_matches"],
       "decision": "stage_draft",
       "reasons": [],
       "metrics": {"expected_payout_usd": "88000", "shortfall_usd": "800", "contingent_fee_usd": "160"}
     },
     {
       "id": 6,
+      "family": "rates",
+      "required_checks": ["signed_terms_verified", "tenor_matches", "original_fixing_date", "no_fallback_amendment", "day_count_matches"],
       "decision": "stage_draft",
       "reasons": [],
       "metrics": {"rate_error_bps": "26.161", "excess_interest_usd": "10464.40"}
     },
     {
       "id": 7,
+      "family": "funds",
+      "required_checks": ["signed_benchmark_matches", "hedging_and_return_basis_match", "side_letters_checked"],
       "decision": "stage_draft",
       "reasons": [],
       "metrics": {"excess_return_pct": "-.20", "fee_eligible_return_pct": "0", "reversal_if_no_fee_usd": "2000"}
     },
     {
       "id": 8,
+      "family": "corporate_actions",
+      "required_checks": ["exact_security_and_event", "entitled_position", "both_ledgers_present", "no_matching_credit"],
       "decision": "stage_draft",
       "reasons": [],
       "metrics": {"claim_usd": "4800"}
     },
     {
       "id": 9,
+      "family": "earnings",
+      "required_checks": ["pre_release_consensus", "fiscal_periods_match", "accounting_definitions_match"],
       "decision": "stage_paper",
       "reasons": [],
       "metrics": {"eps_surprise_usd": ".08", "guidance_surprise_usd": ".26", "pnl_usd_share": "2"}
     },
     {
       "id": 10,
+      "family": "corporate_actions",
+      "required_checks": ["same_security_and_dates", "no_other_corporate_action"],
       "decision": "pass",
       "reasons": [],
       "metrics": {"raw_return_pct": "-2.2", "cash_adjusted_pct": ".2"}
     },
     {
       "id": 11,
+      "family": "funds",
+      "required_checks": ["same_benchmark", "same_currency_hedge", "comparable_valuation_times", "both_funds_eligible"],
       "decision": "stage_paper",
       "reasons": [],
       "metrics": {"premium_gap_bps": "55"}
     },
     {
       "id": 12,
+      "family": "rates",
+      "required_checks": ["same_release_basis", "same_treasury", "same_integral_price_points"],
       "decision": "stage_paper",
       "reasons": [],
       "metrics": {"surprise_jobs_k": "-20", "revision_jobs_k": "-15", "clean_gain_per_100": ".1875"}
     },
     {
       "id": 13,
+      "family": "futures",
+      "required_checks": ["same_day_settlements", "exact_original_contracts", "sufficient_time_to_expiry"],
       "decision": "pause",
       "reasons": ["missing:preset_threshold"],
       "metrics": {"entry_spread_usd_bbl": "1.30", "short_spread_pnl_usd_bbl": ".40"}
     },
     {
       "id": 14,
+      "family": "credit",
+      "required_checks": ["current_price", "full_call_schedule", "credit_scope_confirmed"],
       "decision": "review_bond_b",
       "reasons": [],
       "metrics": {"a_vs_floor_bps": "-60", "b_vs_floor_bps": "12"}
     },
     {
       "id": 15,
+      "family": "options",
+      "required_checks": ["same_strike_and_expiry", "earnings_before_expiry", "current_quotes"],
       "decision": "pause",
       "reasons": ["missing:thesis_clears_break_even"],
       "metrics": {"lower_break_even": "94", "upper_break_even": "106", "pnl_high": "2", "pnl_mid": "-3"}
     },
     {
       "id": 16,
+      "family": "fx",
+      "required_checks": ["intended_value_date", "quote_direction_matches", "settlement_value_date_matches"],
       "decision": "pause",
       "reasons": ["missing:thesis_usd_per_eur"],
       "metrics": {"forward_premium_usd_per_eur": ".0050", "pnl_usd": "700"}
     },
     {
       "id": 17,
+      "family": "corporate_actions",
+      "required_checks": ["fixed_exchange_ratio", "deal_terms_unchanged", "close_as_signed_scenario"],
       "decision": "stage_paper",
       "reasons": [],
       "metrics": {"consideration_per_target_share": "50", "hedge_acquirer_shares": "50", "modeled_gross_pnl_usd": "120"}
     },
     {
       "id": 18,
+      "family": "corporate_actions",
+      "required_checks": ["same_reporting_basis", "no_share_split", "same_entity"],
       "decision": "pass",
       "reasons": [],
       "metrics": {"net_share_change": "1000000", "net_share_change_pct": "1"}
     },
     {
       "id": 19,
+      "family": "credit",
+      "required_checks": ["repayment_completed", "seniority_unchanged", "same_bond_marks"],
       "decision": "stage_paper",
       "reasons": [],
       "metrics": {"expected_due_usd_m": "150", "clean_pnl_per_100": "2"}
     },
     {
       "id": 20,
+      "family": "rates",
+      "required_checks": ["same_pricing_date", "same_dv01_basis", "exact_legs"],
       "decision": "stage_paper",
       "reasons": [],
       "metrics": {"long_dv01_usd_bps": "80", "short_dv01_usd_bps": "80", "first_order_pnl_usd": "480"}
     },
     {
       "id": 21,
+      "family": "fx",
+      "required_checks": ["compatible_quote_times", "compatible_quote_sources", "correct_quote_sides"],
       "decision": "pass",
       "reasons": [],
       "metrics": {"returned_usd": "99948.51", "pnl_usd": "-51.49"}
     },
     {
       "id": 22,
+      "family": "options",
+      "required_checks": ["same_maturity", "current_leg_quotes", "same_underlying"],
       "decision": "pause",
       "reasons": ["missing:downside_thesis_clears"],
       "metrics": {"skew_pct_points": "8", "lower_break_even": "98", "expiry_pnl": "3", "loss_at_or_above_long_strike": "-2"}
     },
     {
       "id": 23,
+      "family": "rates",
+      "required_checks": ["exact_futures_month", "effective_date_known", "monthly_day_weights_match"],
       "decision": "pause",
       "reasons": ["missing:min_difference"],
       "metrics": {"monthly_avg_pct": "4.375", "implied_settlement": "95.625", "paper_pnl_points": ".050"}
     },
     {
       "id": 24,
+      "family": "equity_signals",
+      "required_checks": ["same_sector_peer", "event_calendar_clear", "thesis_intact", "matched_exit"],
       "decision": "stage_paper",
       "reasons": [],
       "metrics": {"two_leg_pnl_usd": "300"}
     },
     {
       "id": 25,
+      "family": "futures",
+      "required_checks": ["same_delivery_month", "same_settlement_date", "same_contracts", "unit_conversion_checked"],
       "decision": "stage_paper",
       "reasons": [],
       "metrics": {"entry_spread_usd_input_bbl": "21.80", "pnl_usd_input_bbl": "2"}
     },
     {
       "id": 26,
+      "family": "earnings",
+      "required_checks": ["same_eps_basis", "same_fiscal_period", "contributor_ids_matched"],
       "decision": "stage_paper",
       "reasons": [],
       "metrics": {"headline_change": "0", "matched_mean_revision": ".10", "pnl_usd_share": "1.50"}
     },
     {
       "id": 27,
+      "family": "fx",
+      "required_checks": ["receipt_ratio_unchanged", "overlapping_marks", "exact_currency_quote"],
       "decision": "pause",
       "reasons": ["missing:quote_hurdle_usd"],
       "metrics": {"parity_usd": "55", "premium_usd": "2.20", "pnl_usd_adr": "1.70"}
     },
     {
       "id": 28,
+      "family": "equity_signals",
+      "required_checks": ["same_volume_lookback", "split_adjustments_match", "same_reported_short_series"],
       "decision": "pass",
       "reasons": [],
       "metrics": {"days_before": "5", "days_after": "10", "short_share_change": "0"}
     },
     {
       "id": 29,
+      "family": "funds",
+      "required_checks": ["daily_reset_confirmed", "consecutive_benchmark_marks"],
       "decision": "pass",
       "reasons": [],
       "metrics": {"benchmark_return_pct": "-1", "leveraged_return_pct": "-4", "idealized_pnl_usd": "-400"}
     },
     {
       "id": 30,
+      "family": "funds",
+      "required_checks": ["offer_terms_current", "matched_nav_proration_scenario"],
       "decision": "pass",
       "reasons": [],
       "metrics": {"accepted_price": "9.80", "residual_break_even": "9.00", "modeled_value_per_share": "9.1625", "pnl_usd": "-37.50"}
     },
     {
       "id": 31,
+      "family": "futures",
+      "required_checks": ["same_cot_category", "futures_only", "publication_before_entry", "exact_contract"],
       "decision": "pause",
       "reasons": ["missing:price_confirmed"],
       "metrics": {"net_position_change": "-20000", "pnl_usd_lb": ".05"}
     },
     {
       "id": 32,
+      "family": "rates",
+      "required_checks": ["matched_tenors", "matched_observation_times"],
       "decision": "stage_paper",
       "reasons": [],
       "metrics": {"entry_breakeven_pct": "2.55", "widening_bps": "15", "real_move_bps": "5", "exit_spread_move_bps": "12"}
     },
     {
       "id": 33,
+      "family": "rates",
+      "required_checks": ["exact_cusip", "fresh_when_issued_quote", "same_integral_price_points", "post_auction_entry"],
       "decision": "pause",
       "reasons": ["missing:tail_floor_bps"],
       "metrics": {"auction_tail_bps": "3", "clean_short_pnl_per_100": ".21875"}
     },
     {
       "id": 34,
+      "family": "corporate_actions",
+      "required_checks": ["rights_transferable", "settlement_within_deadline", "subscription_ratio_matches"],
       "decision": "pause",
       "reasons": ["missing:cost_hurdle"],
       "metrics": {"modeled_cost_per_share": "14.60", "current_discount_usd": ".40", "modeled_gain_usd": ".30"}
     },
     {
       "id": 35,
+      "family": "funds",
+      "required_checks": ["share_counts_unchanged", "same_nav_share_dates", "no_split", "flow_receipt_present"],
       "decision": "pass",
       "reasons": [],
       "metrics": {"asset_change_usd": "50000000", "nav_effect_usd": "50000000", "unexplained_asset_change_usd": "0"}
     },
     {
       "id": 36,
+      "family": "futures",
+      "required_checks": ["fixed_contracts_identified", "matched_roll_settings", "same_settlement_dates"],
       "decision": "pass",
       "reasons": [],
       "metrics": {"display_change_usd_mmbtu": ".20", "old_contract_change_usd_mmbtu": ".01", "new_contract_change_usd_mmbtu": ".01"}
     },
     {
       "id": 37,
+      "family": "rates",
+      "required_checks": ["exact_bill", "settlement_date_verified", "yield_conventions_match"],
       "decision": "stage_paper",
       "reasons": [],
       "metrics": {"cost_per_100": "98.8625", "investment_yield_pct": "4.615", "cost_usd": "9886.25", "redemption_gain_usd": "113.75"}
     },
     {
       "id": 38,
+      "family": "credit",
+      "required_checks": ["exact_cusip", "fresh_trade_and_quote", "quote_size_known"],
       "decision": "pass",
       "reasons": [],
       "metrics": {"ask_excess_points": ".70"}
     },
     {
       "id": 39,
+      "family": "equity_signals",
+      "required_checks": ["same_session_elapsed_time", "regular_hours_only", "comparable_session_length"],
       "decision": "pause",
       "reasons": ["missing:trigger_cleared"],
       "metrics": {"relative_volume": "2", "pnl_usd_share": ".80"}
     },
     {
       "id": 40,
+      "family": "futures",
+      "required_checks": ["exact_full_size_contract", "expiry_matches", "opening_quotation_confirmed"],
       "decision": "pass",
       "reasons": [],
       "metrics": {"futures_minus_spot_points": "3.50", "short_pnl_usd_contract": "-800"}

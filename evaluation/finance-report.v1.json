@@ -3,13 +3,13 @@
   "evidence_level": "synthetic_finance_only",
   "source_csv_sha256": "7f746cf3a0a8fb90c8d680704f13ee3a7ef87a3bd7604a97c5917abbd2a37a57",
   "fixture_sha256": "116cb4ae732a7e24cd71358aa5c4d25cf0ab38a494f8707c03e5431c50128aaf",
-  "expected_sha256": "356aae53522ca3c33d363ce5760a45d5f53d26b7e00d2a70332e1691e13383f4",
-  "protocol_sha256": "739454ab2090726ce9fc3d6c829e9252c3288a74ca0889540dac64d50f1be2c5",
+  "expected_sha256": "246cde27d1c636fc9aba5e23ee2b8ae153f305c2ef8c05ffc9d675e5b2ac475d",
+  "protocol_sha256": "2d2c81826b6249232e743a8c4a4d4a62168a757ea8aedddf58b22b68f745bc30",
   "software": {
     "model": null,
-    "runner_sha256": "4f2bf831cb54a3b5ad8a7d6561423b93689527989f10008b956f4ce3a9c4abbc",
+    "runner_sha256": "23264369d09b416f7f34362f3bba3c1d6ff44624320a26cb4e435c78fca0d498",
     "evaluator_sha256": "65d194b0218dc3f0367c130034e66e7210f634cf4280bafd40bab32e0438a336",
-    "verifier_sha256": "07a8f32f8e490b328826168cc3e006123a360c2966017306ad9a0069d967bc36"
+    "verifier_sha256": "35e58346f9b2aa9617002d5d0157ca8626a492081614bbc08d8f85dd623e0f11"
   },
   "holdout_families": [
     "fx",

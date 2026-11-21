@@ -5,8 +5,12 @@ The fixed cohort is source case IDs 1 through 40, in numerical order. The
 verification text, and source links. The [replay inputs](finance-fixtures.v1.json)
 provide normalized numeric values, calculation trees, decision predicates,
 and factual checks. The [expectation sheet](finance-expected.v1.json) fixes
-the independently transcribed answers and decisions. Scan the whole cohort one
-time and keep every mismatch in the report.
+the independently transcribed answers and decisions. It also records the
+existing synthetic family assignments, holdout families, and required adverse
+checks for each case. The verifier compares the fixture and generated report
+against that inventory. Dropped or renamed checks and changed family or split
+assignments invalidate the run. Scan the whole cohort one time and keep every
+calculation mismatch in the report.
 
 The runner uses Decimal arithmetic with 40 significant digits and rounds
 half up only at explicit fixture steps. The separate verifier compares
