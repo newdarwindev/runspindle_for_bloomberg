@@ -1,0 +1,6 @@
+{
+  "request": {"dataset": "fixture-dataset", "use": "fixture-review", "destination": "fixture-sink", "pilot": "fixture-pilot"},
+  "entitlement": {"dataset": "fixture-dataset", "use": "fixture-review"},
+  "destination": {"destination": "fixture-sink", "dataset": "fixture-dataset", "use": "fixture-review"},
+  "pilot": {"pilot": "fixture-pilot", "dataset": "fixture-dataset", "use": "fixture-review", "destination": "fixture-sink"}
+}
