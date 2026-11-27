@@ -1,0 +1,9 @@
+{
+  "minimum_interviews": 2,
+  "minimum_weekly_frequency": 3,
+  "minimum_paired_examples": 3,
+  "candidate_rows": [
+    {"id": "fixture-a", "interviews": 3, "weekly_frequency": 4, "scope_confirmed": true, "comparable_pairs": 3, "baseline_minutes": 12, "pilot_minutes": 6},
+    {"id": "fixture-b", "interviews": 2, "weekly_frequency": 3, "scope_confirmed": true, "comparable_pairs": 4, "baseline_minutes": 10, "pilot_minutes": 6}
+  ]
+}
