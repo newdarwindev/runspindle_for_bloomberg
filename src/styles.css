@@ -6,3 +6,11 @@
 .research-faq dt{font-weight:700;margin:0 0 6px}
 .research-faq dd{margin:0 0 19px;color:var(--muted)}
 .research-faq dd:last-child{margin-bottom:0}
+
+/* Evidence-led case preview. Keep catalog and Console styles unchanged. */
+.case-example { scroll-margin-top: 88px; }
+.case-visual { margin: 0; }
+.case-visual figcaption { color: var(--muted); font-size: 12px; letter-spacing: .05em; margin-top: 26px; }
+.case-example .feature-copy p { max-width: 52ch; }
+@media(max-width: 700px) { .case-example { scroll-margin-top: 75px; } .case-visual figcaption { margin-top: 18px; } }
+@media(prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }

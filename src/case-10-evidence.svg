@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" role="img" aria-labelledby="title desc">
+ <title id="title">Case 10 evidence path</title><desc id="desc">Check comparable closes, apply the dividend rule, then independently verify the result or pause. Fictional research example only.</desc>
+ <rect width="800" height="480" fill="#102829"/>
+ <path d="M56 83H744M56 402H744" stroke="#66817b" stroke-dasharray="4 7"/>
+ <text x="56" y="60" fill="#d9f282" font-family="monospace" font-size="18" letter-spacing="2">RUNSPINDLE / CASE 10</text>
+ <path d="M89 143v196" stroke="#91ad99" stroke-width="3"/>
+ <g font-family="system-ui,sans-serif" font-size="25" font-weight="650">
+  <rect x="60" y="108" width="680" height="72" rx="10" fill="#263f38"/>
+  <rect x="60" y="205" width="680" height="72" rx="10" fill="#263f38"/>
+  <rect x="60" y="302" width="680" height="72" rx="10" fill="#d9f282"/>
+  <g fill="#d9f282"><circle cx="89" cy="144" r="10"/><circle cx="89" cy="241" r="10"/></g>
+  <circle cx="89" cy="338" r="10" fill="#142b2c"/>
+  <text x="122" y="153" fill="#fffdf2">Check comparable closing prices</text>
+  <text x="122" y="250" fill="#fffdf2">Apply the dividend rule</text>
+  <text x="122" y="347" fill="#142b2c">Verify the result, or record a pause</text>
+ </g>
+ <text x="56" y="445" fill="#b4c6c1" font-family="system-ui,sans-serif" font-size="18">Fictional evidence · Paper review only</text>
+</svg>
